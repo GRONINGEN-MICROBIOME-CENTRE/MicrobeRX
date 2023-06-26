@@ -4,7 +4,7 @@
 
 [**Description**](#description) | [**Requeriments**](#requeriments) | [**Installation**](#installation) | [**Citation**](#citation) | [**License**](#license)
 
-<img src="img/logo.png"  width="300" height="150">
+<img src="img/logo.png"  width="200" height="200">
 
 ## Description
 
