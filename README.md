@@ -1,10 +1,6 @@
-# **MicrobeRX**
-
-[![DOI](https://zenodo.org/badge/405159870.svg)](https://zenodo.org/badge/latestdoi/405159870)
-
-[**Description**](#description) | [**Requeriments**](#requeriments) | [**Installation**](#installation) | [**Citation**](#citation) | [**License**](#license)
-
 <img src="img/logo.png"  width="220" height="200">
+
+[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Citation**](#citation) | [**License**](#license)
 
 ## Description
 
