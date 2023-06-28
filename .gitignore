@@ -1,3 +1,11 @@
 .ipynb_checkpoints/
 README.ipynb
 **/*.cpython-37..pyc
+microberx/__pycache__/__init__.cpython-37.pyc
+microberx/DataBase/__pycache__/__init__.cpython-37.pyc
+microberx/DataBase/__pycache__/DataFiles.cpython-37.pyc
+microberx/Predictor/__pycache__/__init__.cpython-37.pyc
+microberx/Predictor/__pycache__/Analyzer.cpython-37.pyc
+microberx/Predictor/__pycache__/EnzymeFinder.cpython-37.pyc
+microberx/Predictor/__pycache__/Predictor.cpython-37.pyc
+microberx/Predictor/__pycache__/Visualizer.cpython-37.pyc
