@@ -1,6 +1,6 @@
 <img src="img/logo.png"  width="220" height="200">
 
-[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Citation**](#citation) | [**License**](#license)
+[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Citation**](#citation) | [**License**](#license) | [**Disclaimer**](#disclaimer)
 
 ## Description
 
@@ -12,7 +12,7 @@
 
 > The python library was developed to be integrated easily with any other bioinformatic or cheminformatic tool.
 
-> This repository contains a Jupyter Notbook showing the capabilities of this library.
+> This repository contains examples as Jupyter Notbooks showing the capabilities of this library.
 
 Question about usage or troubleshooting? Please leave a comment here
 
@@ -50,7 +50,14 @@ pip install MicrobeRX ## TODO
 
 
 ## Citation
+
+If you use this software or its results in your research, publication, or project, please cite it as follows:
+
 > MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome reveals the drug metabolism landscape of gut microbes https://doi.org/
 
 ## License
 These notebooks are under MIT, see the LICENSE file for details.
+
+## Disclaimer 
+
+This software is still under development and may contain bugs or errors. The developers do not guarantee the accuracy, completeness, or reliability of the software or its results. Use it at your own risk and discretion. The software is provided "as is" without any warranty of any kind, either express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement. The developers are not liable for any damages, losses, or costs arising from the use of the software or its results.
