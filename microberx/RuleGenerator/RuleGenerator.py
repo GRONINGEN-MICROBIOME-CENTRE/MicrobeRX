@@ -1,205 +1,352 @@
-import copy
+import copy, subprocess
 import rdkit
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdqueries, DataStructs,MACCSkeys
+
+import datamol as dm
 
 from rxnmapper import RXNMapper
 rxn_mapper = RXNMapper()
 
 import pandas as pd
 
+''' 
+###################  REACTION TOOLKIT ###################
+'''
 
-class Reaction(object):
-    def __init__(self,reaction_smiles:str, reaction_ids:str, id_key:str='ID'):
-        self.__reaction_with_dummies = AllChem.ReactionFromSmarts(reaction_smiles,useSmiles=True)
-        self.reaction_ids = reaction_ids
-        self.reactant_ids=self.reaction_ids.split('>>')[0].split('.')
-        self.product_ids=self.reaction_ids.split('>>')[1].split('.')
-        self.id_key=id_key
-        self.fixed_reaction = self.__set_ids_to_reaction_and_adjust_agents()
-        self.fixed_reaction_smiles = AllChem.ReactionToSmiles(self.fixed_reaction)
-        
-        self.mapped_reaction = self.__map_reaction()
-        self.mapped_reaction_smarts = AllChem.ReactionToSmarts (self.mapped_reaction)
-        
-    def __set_ids_to_reaction_and_adjust_agents (self):
-        
-        def ___replace_dummy_atoms(mol: Chem.Mol): ## Performs a molecular sanitization, removes stereochemistry and replaces dummy atoms
-            Chem.SanitizeMol(mol)
-            Chem.RemoveStereochemistry(mol)
-            dummy_query = Chem.MolFromSmiles('*')
-            fixed_mol=AllChem.ReplaceSubstructs(mol,dummy_query,Chem.MolFromSmiles('[#6]'),replaceAll=True,useChirality=False)[0]
-            #fixed_mol= ___neutralize_atoms(fixed_mol)
-            AllChem.Compute2DCoords(fixed_mol)
-            return fixed_mol
-        
-        def ___neutralize_atoms(mol:Chem.Mol):
-            charged_atom_smarts = Chem.MolFromSmarts("[+1!h0!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
-            atom_matches = mol.GetSubstructMatches(charged_atom_smarts)
-            atom_matches_list = [atom_list[0] for atom_list in atom_matches]
-            if len(atom_matches_list) > 0:
-                for atom_index in atom_matches_list:
-                    atom = mol.GetAtomWithIdx(atom_index)
-                    atom_charge = atom.GetFormalCharge()
-                    atom_hcount = atom.GetTotalNumHs()
-                    atom.SetFormalCharge(0)
-                    atom.SetNumExplicitHs(atom_hcount - atom_charge)
-                    atom.UpdatePropertyCache()
-        
-        fixed_reaction=AllChem.ChemicalReaction()
-        for index, reactant in enumerate(self.__reaction_with_dummies.GetReactants()):
-            fixed_reactant=___replace_dummy_atoms(reactant)
-            if fixed_reactant != None:
-                fixed_reactant.SetProp(self.id_key,self.reactant_ids[index])
-                fixed_reaction.AddReactantTemplate(fixed_reactant)
-        for index, product in enumerate(self.__reaction_with_dummies.GetProducts()):
-            fixed_product=___replace_dummy_atoms(product)
-            if fixed_product != None:
-                fixed_product.SetProp(self.id_key,self.product_ids[index])
-                fixed_reaction.AddProductTemplate(fixed_product)
-        
-        return fixed_reaction
+def SanitizeReaction (target_reaction:AllChem.ChemicalReaction) -> AllChem.ChemicalReaction:
+    '''
+    Sanitizes a chemical reaction by removing stereochemistry, replacing dummy atoms with carbon, and standardizing the molecules.
+
+    Parameters:
+        target_reaction (AllChem.ChemicalReaction): The input chemical reaction to be sanitized.
+
+    Returns:
+        fixed_reaction (AllChem.ChemicalReaction): The output chemical reaction after sanitization.
+    '''
+    def _replace_dummy_atoms(mol: Chem.Mol): ## Performs a molecular sanitization, removes stereochemistry and replaces dummy atoms
+        dummy_query = Chem.MolFromSmiles('*')
+        fixed_mol=AllChem.ReplaceSubstructs(mol,dummy_query,Chem.MolFromSmiles('[#6]'),replaceAll=True,useChirality=False)[0]
+        fixed_mol = dm.fix_mol(fixed_mol)
+        fixed_mol = dm.sanitize_mol(fixed_mol)
+        fixed_mol = dm.standardize_mol(fixed_mol)
+        Chem.RemoveStereochemistry(fixed_mol)
+        AllChem.Compute2DCoords(fixed_mol)
+        return fixed_mol
+
+
+    fixed_reaction=AllChem.ChemicalReaction()
     
-    def __map_reaction (self):
-        
-        def ___reset_molecules_ids(reference_mols:list, target_mols: list):
-            [t.SetProp(self.id_key,'No_ID') for t in target_mols]
-            for reference in reference_mols:
-                Chem.GetSSSR(reference)
-                reference_fps = MACCSkeys.GenMACCSKeys(reference)
-                for target in target_mols:
-                    Chem.GetSSSR(target)
-                    target_fps = MACCSkeys.GenMACCSKeys(target)
-                    similarity=DataStructs.FingerprintSimilarity(reference_fps,target_fps)
-                    if similarity == 1:
-                        target.SetProp(self.id_key, reference.GetProp(self.id_key))
-                        break
-                        
-        mapper=rxn_mapper.get_attention_guided_atom_maps([self.fixed_reaction_smiles])[0]
+    for index, reactant in enumerate(target_reaction.GetReactants()):
+        fixed_reactant=_replace_dummy_atoms(reactant)
+        if fixed_reactant != None:
+            fixed_reaction.AddReactantTemplate(fixed_reactant)
+    for index, product in enumerate(target_reaction.GetProducts()):
+        fixed_product=_replace_dummy_atoms(product)
+        if fixed_product != None:
+            fixed_reaction.AddProductTemplate(fixed_product)
+
+    return fixed_reaction
+
+
+def MapReaction (reaction_smiles:str=None, mapper:str='RXNMapper') -> AllChem.ChemicalReaction:
+    '''
+    Maps the atoms of a chemical reaction using either RXNMapper or ReactionDecoder.
+
+    Parameters:
+        reaction_smiles (str): The input chemical reaction in SMILES format.
+        mapper (str): The name of the mapper to use. Either 'RXNMapper' or 'ReactionDecoder'. Default is 'RXNMapper'.
+
+    Returns:
+        mapped_reaction (AllChem.ChemicalReaction): The output rdkit chemical reaction with atom mapping.
+    '''
+    def _reaction_decoder(reaction_smiles:str):
+        out=subprocess.call(['java', '-jar', 'bin/RTD.jar','-Q', 'SMI', '-q', reaction_smiles, '-c', '-j', 'AAM', '-f', 'TEXT'],timeout=360)
+        mapped_rxn=AllChem.ReactionFromRxnFile('ECBLAST_smiles_AAM.rxn')
+        return mapped_rxn
+
+    if mapper == 'RXNMapper':
+        mapper=rxn_mapper.get_attention_guided_atom_maps([reaction_smiles])[0]
 
         mapped_reaction = AllChem.ReactionFromSmarts(mapper['mapped_rxn'],useSmiles=True)
-        
-        ___reset_molecules_ids (self.fixed_reaction.GetReactants(), mapped_reaction.GetReactants())
-        ___reset_molecules_ids (self.fixed_reaction.GetProducts(), mapped_reaction.GetProducts())
-        
-        return mapped_reaction
-        
-            
-    def __rename_reaction_agents_after_mapping (self):
-        [tarMol.SetProp(self.id_key, 'X') for tarMol in tarMols]
-        for refMol in refMols:
-            refFPS = Chem.RDKFingerprint(refMol, useHs=True)
-            for tarMol in tarMols:
-                tarFPS = Chem.RDKFingerprint(tarMol, useHs=True)
-                sim = DataStructs.FingerprintSimilarity(refFPS, tarFPS)
-                if sim == 1:
-                    tarMol.SetProp(self.id_key, refMol.GetProp(self.id_key))
-                    break
-                    
 
-class Rules(object):
-    def __init__(self, mapped_reaction:AllChem.ChemicalReaction,id_key:str='ID'):
-        self.mapped_reaction=mapped_reaction
-        self.id_key=id_key
-        self.single_reactant_reactions = self.__generate_single_reactant_reactions()
-        self.single_reactant_rules={}
-        for key in self.single_reactant_reactions:
-            rules=self.__generate_rules(self.single_reactant_reactions[key])
-            self.single_reactant_rules[key]=rules
+    if mapper == 'ReactionDecoder':
+        mapped_reaction= _reaction_decoder(reaction_smiles)
+
+    return mapped_reaction
+
+def SetReactionIds(reference_reaction:AllChem.ChemicalReaction, target_reaction:AllChem.ChemicalReaction, reaction_ids:str) -> AllChem.ChemicalReaction:
+    '''
+    Sets the IDs of the reactants and products of a target reaction based on their molecular formulas and a reference reaction.
+
+    Parameters:
+        reference_reaction (AllChem.ChemicalReaction): The reference chemical reaction that has the same reactants and products as the target reaction, but in a different order or orientation.
+        target_reaction (AllChem.ChemicalReaction): The target chemical reaction that needs to have its IDs set.
+        reaction_ids (str): The IDs of the reactants and products of the reference reaction, in the format of 'R1.R2.>>P1.P2.', where R1, R2, P1, P2 are the IDs.
+
+    Returns:
+        target_reaction (AllChem.ChemicalReaction): The target chemical reaction with its IDs set according to the reference reaction and the reaction_ids.
+    '''
+    reactants_ids=reaction_ids.split('>>')[0].split('.')
+    products_ids=reaction_ids.split('>>')[1].split('.')
     
-    def __generate_single_reactant_reactions(self):
-        
-        def ___sort_reaction(single_reactant_reaction:AllChem.ChemicalReaction) -> AllChem.ChemicalReaction:
-            
-            reactant_atom_map=[atom.GetAtomMapNum() for atom in single_reactant_reaction.GetReactantTemplate(0).GetAtoms()]
-            
-            if len(reactant_atom_map)>0:
-                sorted_reaction=AllChem.ChemicalReaction()
-                [sorted_reaction.AddReactantTemplate(reactant) for reactant in single_reactant_reaction.GetReactants()]
-                products={}
-                for product in single_reactant_reaction.GetProducts():
-                    product_atom_map=[atom.GetAtomMapNum() for atom in product.GetAtoms() if atom.GetAtomMapNum()!=0]
-                    products[product]=len(set(product_atom_map) & set(reactant_atom_map))
-                
-                sorted_products=dict(sorted(products.items(), key = lambda x: x[1], reverse = True))
-                
-                [sorted_reaction.AddProductTemplate(product) for product in sorted_products.keys()]
+    reactants_formulas=[AllChem.CalcMolFormula(r) for r in reference_reaction.GetReactants()]
+    products_formulas=[AllChem.CalcMolFormula(r) for r in reference_reaction.GetProducts()]
 
-            return sorted_reaction
-        
+    reactants_map=dict(zip(reactants_formulas,reactants_ids))
+    products_map=dict(zip(products_formulas,products_ids))
     
-        all_unique_reactions={}
-        for reactant in self.mapped_reaction.GetReactants():
-            unique_reaction=AllChem.ChemicalReaction()
-            
-            unique_reaction.AddReactantTemplate(reactant)
-            for product in self.mapped_reaction.GetProducts():
-                unique_reaction.AddProductTemplate(product)
-        
-            all_unique_reactions[reactant.GetProp(self.id_key)]=___sort_reaction(unique_reaction)
-        
-        return all_unique_reactions
+    for r in target_reaction.GetReactants():
+        r.SetProp('ID',reactants_map[AllChem.CalcMolFormula(r)])
+
+    for p in target_reaction.GetProducts():
+        p.SetProp('ID',products_map[AllChem.CalcMolFormula(p)])
     
-    def __generate_rules(self,single_reactant_reaction:AllChem.ChemicalReaction):
-        rules={}
-        single_reactant_reaction.Initialize()
-        reactant=single_reactant_reaction.GetReactantTemplate(0)
-        reacting_atoms=list(single_reactant_reaction.GetReactingAtoms()[0])   
+    return target_reaction
+    
+
+def ReverseReaction(reaction:AllChem.ChemicalReaction) -> AllChem.ChemicalReaction:
+    '''
+    ReverseReaction(reaction)
+    Reverses a chemical reaction by swapping the reactants and products.
+
+    Parameters:
+        reaction (AllChem.ChemicalReaction): The input chemical reaction to be reversed.
+
+    Returns:
+        reversed_reaction (AllChem.ChemicalReaction): The output chemical reaction that is the reverse of the input reaction.
+    '''
+    reversed_reaction = AllChem.ChemicalReaction()
+    
+    for i, p in enumerate(reaction.GetProducts()):
+        reversed_reaction.AddReactantTemplate(p)
+    
+    for i, r in enumerate(reaction.GetReactants()):
+        reversed_reaction.AddProductTemplate(r)
+    
+    return reversed_reaction
+
+''' 
+###################  RULES TOOLKIT ###################
+'''
+
+def GenerateSingleReactantReactions(mapped_reaction:AllChem.ChemicalReaction) -> dict:
+    '''
+    Generates a dictionary of single reactant reactions from a mapped reaction.
+
+    Parameters:
+        mapped_reaction (AllChem.ChemicalReaction): The input chemical reaction with atom mapping.
+
+    Returns:
+        all_unique_reactions (dict): A dictionary of single reactant reactions, keyed by the reactant index and containing the reactant ID and the single reactant reaction object.
+
+    Helper function:
+        _sort_reaction(single_reactant_reaction)
+            Sorts the products of a single reactant reaction based on the number of mapped atoms they share with the reactant.
+
+            Parameters:
+                single_reactant_reaction (AllChem.ChemicalReaction): The input chemical reaction with one reactant and one or more products.
+
+            Returns:
+                sorted_reaction (AllChem.ChemicalReaction): The output chemical reaction with the same reactant and the products sorted in descending order of mapped atom overlap.
+    '''
         
-        matching_rings=[]
-        Chem.GetSSSR(reactant)
-        rings=reactant.GetRingInfo()
-        
-        def ___trim_reaction(single_reactant_reaction: AllChem.ChemicalReaction, atom_map_to_remove) -> AllChem.ChemicalReaction:
-            single_reactant_reaction.Initialize()
-            trimmed_reaction= AllChem.ChemicalReaction()
-            
-            def ____adjust_mol_query(mol:Chem.Mol):
+    def _sort_reaction(single_reactant_reaction:AllChem.ChemicalReaction) -> AllChem.ChemicalReaction:
 
-                params = Chem.AdjustQueryParameters()
-                params.adjustDegree=False
-                params.aromatizeIfPossible=True
-                params.adjustRingChain=True
-                params.adjustRingChainFlags = Chem.ADJUST_IGNOREDUMMIES
-                params.adjustRingCount=True
-                params.adjustSingleBondsBetweenAromaticAtoms=True
-                params.adjustSingleBondsToDegreeOneNeighbors=True
-                params.adjustConjugatedFiveRings=True
+        reactant_atom_map=[atom.GetAtomMapNum() for atom in single_reactant_reaction.GetReactantTemplate(0).GetAtoms()]
 
-                fixed_mol = Chem.AdjustQueryProperties(mol,params,)
-
-                for atom in fixed_mol.GetAtoms():
-                    if atom.GetIsAromatic(): 
-                        atom.ExpandQuery(rdqueries.IsAromaticQueryAtom(False))
-
-                return fixed_mol
-            
-            def ____trim_mol(mol:Chem.Mol,atom_map_to_remove):
-                
-                fixed_mol=____adjust_mol_query(mol)
-                editable_mol = Chem.EditableMol(fixed_mol)
-                atoms_to_remove= [atom.GetIdx() for atom in mol.GetAtoms() if atom.GetAtomMapNum() in atom_map_to_remove]
-                
-                for atom_index in sorted(atoms_to_remove, reverse=True):
-                    editable_mol.RemoveAtom(atom_index)
-                
-                return editable_mol.GetMol()
-
-            for reactant in single_reactant_reaction.GetReactants():
-                trimmed_reaction.AddReactantTemplate(____trim_mol(reactant,atom_map_to_remove))
+        if len(reactant_atom_map)>0:
+            sorted_reaction=AllChem.ChemicalReaction()
+            [sorted_reaction.AddReactantTemplate(reactant) for reactant in single_reactant_reaction.GetReactants()]
+            products={}
             for product in single_reactant_reaction.GetProducts():
-                trimmed_reaction.AddProductTemplate(____trim_mol(product,atom_map_to_remove))
+                product_atom_map=[atom.GetAtomMapNum() for atom in product.GetAtoms() if atom.GetAtomMapNum()!=0]
+                products[product]=len(set(product_atom_map) & set(reactant_atom_map))
 
-            return AllChem.ReactionToSmarts(trimmed_reaction)
-        
-        while len(set(reacting_atoms))<30 and len(set(reacting_atoms))<reactant.GetNumAtoms():
+            sorted_products=dict(sorted(products.items(), key = lambda x: x[1], reverse = True))
+
+            [sorted_reaction.AddProductTemplate(product) for product in sorted_products.keys()]
+
+        return sorted_reaction
+
+
+    all_unique_reactions={}
+    for index,reactant in enumerate(mapped_reaction.GetReactants()):
+        unique_reaction=AllChem.ChemicalReaction()
+
+        unique_reaction.AddReactantTemplate(reactant)
+        for product in mapped_reaction.GetProducts():
+            unique_reaction.AddProductTemplate(product)
+
+        all_unique_reactions[f"reactantIdx_{index+1}"]={'ID':reactant.GetProp('ID'),'SingleReactantReaction':_sort_reaction(unique_reaction)}
+
+    return all_unique_reactions
+
+def GenerateRules(single_reactant_reaction:AllChem.ChemicalReaction) -> dict:
+    '''
+    GenerateRules(single_reactant_reaction)
+    Generates a dictionary of rules for a single reactant reaction based on the reacting atoms and the rings.
+
+    Parameters:
+        single_reactant_reaction (AllChem.ChemicalReaction): The input chemical reaction with one reactant and one or more products.
+
+    Returns:
+        reaction_rules (dict): A dictionary of rules for the single reactant reaction, keyed by the reactant name and containing the reactant and product SMILES, the product name, and a sub-dictionary of rules keyed by the number of atoms to keep.
+
+    Helper function:
+        _trim_reaction(single_reactant_reaction, atom_map_to_remove)
+            Trims a single reactant reaction by removing the atoms with the specified atom map numbers.
+
+            Parameters:
+                single_reactant_reaction (AllChem.ChemicalReaction): The input chemical reaction with one reactant and one or more products.
+                atom_map_to_remove (list): A list of atom map numbers to remove from the reaction.
+
+            Returns:
+                trimmed_reaction (str): The output chemical reaction in SMARTS format after trimming.
+
+            Helper function:
+                __adjust_mol_query(mol)
+                    Adjusts the query properties of a molecule to make it more generic.
+
+                    Parameters:
+                        mol (Chem.Mol): The input molecule to be adjusted.
+
+                    Returns:
+                        fixed_mol (Chem.Mol): The output molecule after adjusting the query properties.
+
+                __trim_mol(mol, atom_map_to_remove)
+                    Trims a molecule by removing the atoms with the specified atom map numbers.
+
+                    Parameters:
+                        mol (Chem.Mol): The input molecule to be trimmed.
+                        atom_map_to_remove (list): A list of atom map numbers to remove from the molecule.
+
+                    Returns:
+                        trimmed_mol (Chem.Mol): The output molecule after trimming.
+    '''
+    single_reactant_reaction.Initialize()
+    
+    reactant = single_reactant_reaction.GetReactantTemplate(0)
+    reactant_name = reactant.GetProp('ID')
+    
+    main_product = single_reactant_reaction.GetProductTemplate(0)
+    main_product_name = main_product.GetProp('ID')
+    
+    reacting_atoms=list(single_reactant_reaction.GetReactingAtoms()[0])   
+
+    matching_rings=[]
+    Chem.GetSSSR(reactant)
+    rings=reactant.GetRingInfo()
+    
+    ## Initialize dictionaries to store data
+    rules = {}
+    reaction_rules = {}
+
+    def _trim_reaction(single_reactant_reaction: AllChem.ChemicalReaction, atom_map_to_remove) -> AllChem.ChemicalReaction:            
+        single_reactant_reaction.Initialize()
+        trimmed_reaction= AllChem.ChemicalReaction()
+
+        def __adjust_mol_query(mol:Chem.Mol):
+
+            params = Chem.AdjustQueryParameters()
+            params.adjustDegree=False
+            params.aromatizeIfPossible=True
+            params.adjustRingChain=True
+            params.adjustRingChainFlags = Chem.ADJUST_IGNOREDUMMIES
+            params.adjustRingCount=True
+            params.adjustSingleBondsBetweenAromaticAtoms=True
+            params.adjustSingleBondsToDegreeOneNeighbors=True
+            params.adjustConjugatedFiveRings=True
+
+            fixed_mol = Chem.AdjustQueryProperties(mol,params,)
+
+            for atom in fixed_mol.GetAtoms():
+                if atom.GetIsAromatic(): 
+                    atom.ExpandQuery(rdqueries.IsAromaticQueryAtom(False))
+
+            return fixed_mol
+
+        def __trim_mol(mol:Chem.Mol,atom_map_to_remove):
+
+            fixed_mol=__adjust_mol_query(mol)
+            editable_mol = Chem.EditableMol(fixed_mol)
+            atoms_to_remove= [atom.GetIdx() for atom in mol.GetAtoms() if atom.GetAtomMapNum() in atom_map_to_remove]
+
+            for atom_index in sorted(atoms_to_remove, reverse=True):
+                editable_mol.RemoveAtom(atom_index)
+
+            return editable_mol.GetMol()
+
+
+        for reactant in single_reactant_reaction.GetReactants():
+            trimmed_reaction.AddReactantTemplate(__trim_mol(reactant,atom_map_to_remove))
+        for product in single_reactant_reaction.GetProducts():
+            trimmed_reaction.AddProductTemplate(__trim_mol(product,atom_map_to_remove))
+        return AllChem.ReactionToSmarts(trimmed_reaction)
+    
+    if len(reacting_atoms)<1:
+        rules={}
+    else:
+    
+        while len(set(reacting_atoms))<=30 and len(set(reacting_atoms))<reactant.GetNumAtoms():
                 for atom_index in set(reacting_atoms):
                     atom=reactant.GetAtomWithIdx(atom_index)
                     reacting_atoms.extend([atom for ring in rings.AtomRings() for atom in ring if atom_index in ring])
                     reacting_atoms.extend([neighbor.GetIdx() for neighbor in atom.GetNeighbors()])
                     atoms_to_keep=(set(reacting_atoms))
-                    atom_map_to_remove=[atom.GetAtomMapNum() for atom in reactant.GetAtoms() if atom.GetIdx() not in atoms_to_keep]
+                    atom_map_to_remove=[atom.GetAtomMapNum() for atom in reactant.GetAtoms() if atom.GetIdx() not in atoms_to_keep] 
 
-                rules[len(atoms_to_keep)]=___trim_reaction(single_reactant_reaction,atom_map_to_remove)
+                rules[len(atoms_to_keep)]=_trim_reaction(single_reactant_reaction,atom_map_to_remove)
+    
+    reaction_rules[reactant_name]={'ReactantMap':dm.to_smiles(reactant), 'ProductName': main_product_name,'ProductMap':dm.to_smiles(main_product),'SingleReactantRules':rules}
 
-        return rules
+    return reaction_rules
+
+'''
+###################  CLASSES  ###################
+'''
+
+class REACTION(object):
+    '''
+    A class to represent a chemical reaction with various attributes and methods.
+
+    Attributes:
+        SanitizedReaction (AllChem.ChemicalReaction): The sanitized version of the input reaction, obtained by calling the SanitizeReaction function.
+        MappedReaction (AllChem.ChemicalReaction): The mapped version of the sanitized reaction, obtained by calling the MapReaction and SetReactionIds functions.
+        ReversedReaction (AllChem.ChemicalReaction or None): The reversed version of the mapped reaction, obtained by calling the ReverseReaction function, or None if the reversible argument is False.
+
+    Methods:
+        __init__(reaction_smiles, reaction_ids, reversible, mapper)
+            Initializes a REACTION object with the given arguments.
+
+            Parameters:
+                reaction_smiles (str): The input chemical reaction in SMILES format.
+                reaction_ids (str): The IDs of the reactants and products of the input reaction, in the format of 'R1.R2.>>P1.P2.', where R1, R2, P1, P2 are the IDs.
+                reversible (bool): A flag to indicate whether to generate a reversed reaction or not. Default is False.
+                mapper (str): The name of the mapper to use for atom mapping. Either 'RXNMapper' or 'ReactionDecoder'. Default is 'ReactionDecoder'.
+
+    Example:
+        >>> from rdkit import Chem
+        >>> from rdkit.Chem import AllChem
+        >>> import dm # a module for molecular sanitization and standardization
+        >>> import rxn_mapper # a module for attention-guided atom mapping
+        >>> import subprocess # a module for calling external commands
+        >>> reaction_smiles = 'CC(=O)O.CCOC(=O)C>>CCOC(=O)CC.O'
+        >>> reaction_ids = 'R1.R2>>P1.P2'
+        >>> reaction = REACTION(reaction_smiles, reaction_ids, reversible=True, mapper='RXNMapper')
+        >>> print(reaction.SanitizedReaction)
+        [CH3:1][C:2](=[O:3])[OH:4].[CH3:5][CH2:6][O:7][C:8](=[O:9])[CH3:10]>><[CH3:1][CH2:6][O:7][C:8](=[O:9])[CH2:11][CH3:10].[OH:4][C:2](=[O:3])[H]
+        >>> print(reaction.MappedReaction)
+        [CH3:1][C:2](=[O:3])[OH:4].[CH3:5][CH2:6][O:7][C:8](=[O:9])[CH3:10]>><[CH3:1][CH2:6][O:7][C:8](=[O:9])[CH2:11][CH3:10].[OH:4][C:2](=[O:3])[H]
+        >>> print(reaction.ReversedReaction)
+        [CH3:1][CH2:6][O:7][C:8](=[O:9])[CH2:11][CH3:10].[OH:4][C:2](=[O:3])[H]>><[CH3:1][C:2](=[O:3])[OH:4].[CH3:5][CH2:6][O:7][C:8](=[O:9])[CH3:10]
+        '''
+    def __init__(self, reaction_smiles:str, reaction_ids:str, reversible:bool = False, mapper:str = 'ReactionDecoder'):
+        self.SanitizedReaction = SanitizeReaction(AllChem.ReactionFromSmarts(reaction_smiles,useSmiles=True))
+        self.__mapped_reaction_raw = MapReaction(AllChem.ReactionToSmiles(self.SanitizedReaction),mapper=mapper)
+        self.__mapped_reaction_sanitized = SanitizeReaction(self.__mapped_reaction_raw)
+        self.MappedReaction = SetReactionIds(self.SanitizedReaction,self.__mapped_reaction_sanitized,reaction_ids)
+        if reversible==True:
+            self.ReversedReaction = ReverseReaction(self.MappedReaction)
+        if reversible==False:
+            self.ReversedReaction = None

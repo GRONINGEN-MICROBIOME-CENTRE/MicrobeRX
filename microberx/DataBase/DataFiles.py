@@ -1,5 +1,5 @@
 """
-Location of data files for the MicrobeRX unit tests
+Location of data files for the MicrobeRX databases
 ====================================================
 
 """
