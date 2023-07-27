@@ -9,6 +9,15 @@ from rxnmapper import RXNMapper
 rxn_mapper = RXNMapper()
 
 import pandas as pd
+import re
+
+''' 
+###################  REACTION TOOLKIT ###################
+'''
+
+from importlib_resources import files
+
+REACTION_DECODER = files("microberx.RuleGenerator.bin").joinpath("RTD.jar")
 
 ''' 
 ###################  REACTION TOOLKIT ###################
@@ -61,7 +70,7 @@ def MapReaction (reaction_smiles:str=None, mapper:str='RXNMapper') -> AllChem.Ch
         mapped_reaction (AllChem.ChemicalReaction): The output rdkit chemical reaction with atom mapping.
     '''
     def _reaction_decoder(reaction_smiles:str):
-        out=subprocess.call(['java', '-jar', 'bin/RTD.jar','-Q', 'SMI', '-q', reaction_smiles, '-c', '-j', 'AAM', '-f', 'TEXT'],timeout=360)
+        out=subprocess.call(['java', '-jar', REACTION_DECODER,'-Q', 'SMI', '-q', reaction_smiles, '-c', '-j', 'AAM', '-f', 'TEXT'],timeout=360)
         mapped_rxn=AllChem.ReactionFromRxnFile('ECBLAST_smiles_AAM.rxn')
         return mapped_rxn
 
@@ -350,3 +359,98 @@ class REACTION(object):
             self.ReversedReaction = ReverseReaction(self.MappedReaction)
         if reversible==False:
             self.ReversedReaction = None
+
+class PARSER(object):
+    '''
+    A class to parse a chemical reaction from a string format into a dictionary format.
+
+    Attributes:
+        reaction (str): The input chemical reaction in a string format, using names or symbols of compounds and stoichiometry coefficients.
+        compounds_map (dict): A dictionary that maps the names or symbols of compounds to their SMILES strings.
+        reaction_dict (dict): The output chemical reaction in a dictionary format, containing the reversibility, the reactants and products with their stoichiometry and SMILES, and the reaction SMILES and names.
+
+    Methods:
+        __init__(reaction, compounds_map)
+            Initializes a PARSER object with the given arguments.
+
+            Parameters:
+                reaction (str): The input chemical reaction in a string format, using names or symbols of compounds and stoichiometry coefficients.
+                compounds_map (dict): A dictionary that maps the names or symbols of compounds to their SMILES strings.
+
+        decompose_reaction()
+            Decomposes the input reaction into its components and stores them in the reaction_dict attribute.
+
+            No parameters or returns.
+
+    Example:
+        >>> import re # a module for regular expressions
+        >>> reaction = '2 H2 + O2 --> 2 H2O'
+        >>> compounds_map = {'H2': '[HH]', 'O2': 'O=O', 'H2O': 'O'}
+        >>> parser = PARSER(reaction, compounds_map)
+        >>> parser.decompose_reaction()
+        >>> print(parser.reaction_dict)
+        {'Reversible': False, 'LEFT': {'H2': {'stoichiometry': 2.0, 'smiles': '[HH]'}, 'O2': {'stoichiometry': 1.0, 'smiles': 'O=O'}}, 'RIGHT': {'H2O': {'stoichiometry': 2.0, 'smiles': 'O'}}, 'ReactionSmiles': '[HH].[HH].O=O>>O.O', 'ReactionNames': 'H2.H2.O2>>H2O.H2O'}
+    '''
+    def __init__(self,reaction:str=None,compounds_map:dict=None):
+        self.reaction=reaction
+        self.compounds_map=compounds_map
+
+    def decompose_reaction(self):
+        if ' = ' in self.reaction:
+            self.reaction = re.sub("@\w+", "", self.reaction)
+            reactants, products = self.reaction.split(" = ")
+            Reversible=True
+        
+        if '<=>' in self.reaction:
+            self.reaction = re.sub(r"\[[a-z]\]", "", self.reaction)
+            reactants, products = self.reaction.split('<=>')
+            Reversible=True
+        
+        if '-->' in self.reaction:
+            self.reaction = re.sub(r"\[[a-z]\]", "", self.reaction)
+            reactants, products = self.reaction.split('-->')
+            Reversible=False
+        
+        
+        # Split the reactants and products into individual compounds
+        reactants = reactants.split('+')
+        products = products.split('+')
+
+        # Create empty dictionaries to store the reactants and products with their stoichiometry
+        Left_side = {}
+        Right_side = {}
+        smiles_scheme=""
+        names_scheme=""
+        
+        for r in reactants:
+            r = r.strip()
+            if len(r.split())>1:
+                stoich, name = r.split()
+            else:
+                name=r
+                stoich=1
+            
+            smiles=self.compounds_map[name]
+            Left_side[name] = {'stoichiometry':float(stoich),'smiles':smiles}
+            smiles_scheme += (smiles + ".")* int(float(stoich))
+            names_scheme += (name + ".")* int(float(stoich))
+        
+        smiles_scheme = smiles_scheme[:-1]
+        names_scheme = names_scheme[:-1]
+        
+        smiles_scheme += ">>"
+        names_scheme += ">>"
+        for p in products:
+            p = p.strip()
+            if len(p.split())>1:
+                stoich, name = p.split()
+            else:
+                name=p
+                stoich=1
+            
+            smiles=self.compounds_map[name]
+            Right_side[name] = {'stoichiometry':float(stoich),'smiles':smiles}
+            smiles_scheme += (smiles + ".")* int(float(stoich))
+            names_scheme += (name + ".")* int(float(stoich))
+
+        self.reaction_dict={'Reversible':Reversible,'LEFT':Left_side,'RIGHT':Right_side,'ReactionSmiles':smiles_scheme[:-1],'ReactionNames':names_scheme[:-1]}
