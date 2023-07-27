@@ -18,7 +18,7 @@ Question about usage or troubleshooting? Please leave a comment here
 
 ## Requirements
 
-Jupyter Dock is reliant on a variety of academic software. The Jupyter Dock.yaml file contains all the tools and dependencies, but the following are some of the most noticeable:
+MicrobeRX is reliant on a variety of academic software. The Jupyter Dock.yaml file contains all the tools and dependencies, but the following are some of the most noticeable:
 
 - rdkit
 - datamol
@@ -26,13 +26,9 @@ Jupyter Dock is reliant on a variety of academic software. The Jupyter Dock.yaml
 - pubchempy
 - pandas
 - plotly
-- plotly_express
-- distinctipy
-- numpy
-- matplotlib
-- seaborn
 - mols2grid
-- tqdm
+- rxnMapper
+- ReactionDecoder
 
 ## Installation 
 
