@@ -19,6 +19,15 @@ import mols2grid
 import warnings
 warnings.filterwarnings('ignore')
 
+''' 
+################### TOOLKIT ###################
+'''
+
+
+
+
+
+
 
 class Visualizer:
     """
