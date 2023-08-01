@@ -1,4 +1,4 @@
-<img src="img/logo.png"  width="220" height="200">
+<img src="img/logo.png"  width="320" height="300">
 
 [**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Examples**](#examples) | [**Citation**](#citation) | [**License**](#license) | [**Disclaimer**](#disclaimer)
 
