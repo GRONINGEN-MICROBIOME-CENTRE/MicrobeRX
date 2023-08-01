@@ -49,62 +49,6 @@ def compute_molecular_descriptors(data_frame: pd.DataFrame, smiles_col:str) -> p
     
     return data_frame
 
-def plot_molecular_descriptors(data_frame:pd.DataFrame, names_col:str) -> go.Figure:
-    '''
-    This function plots the molecular descriptors of a given data frame using polar coordinates.
-
-    Parameters:
-    - data_frame: a pandas data frame that contains the molecular descriptors as columns and the compound names as rows.
-    - names_col: a string that specifies the name of the column that contains the compound names.
-
-    Returns:
-    - Figure: a plotly figure object that shows the polar plot of the molecular descriptors.
-
-    The function normalizes the molecular descriptors to fit in the range [0, 1] and then plots them as radial lines for each compound. The function also plots the upper and lower limits of the Lipinski's rule of five as shaded regions in orange and yellow, respectively. The function uses distinct colors for each compound and displays a legend on the right side of the plot.
-    '''
-        
-    data=pd.DataFrame(index=list(data_frame[names_col])) 
-    data['MolWt']=[i/500 for i in data_frame['MolWt']]
-    data['LogP']=[i/5 for i in data_frame['LogP']]
-    data['HBA']=[i/10 for i in data_frame['NumHAcceptors']]
-    data['HBD']=[i/5 for i in data_frame['NumHDonors']]
-    data['RotB']=[i/10 for i in data_frame['NumRotatableBonds']]
-    data['TPSA']=[i/140 for i in data_frame['TPSA']]
-
-    Ro5_up=[1,1,1,1,1,1]
-    Ro5_low=[0.5,0.1,0.1,0.25,0.1,0.5]  
-    #data=data.reindex(natsorted(data.index))
-    categories=list(data.columns)  
-
-    Figure = go.Figure()
-
-    fig1 = px.line_polar(r=Ro5_up, theta=categories, line_close=True,color_discrete_sequence=['red'],)
-    fig1.update_traces(fill='toself',fillcolor='orange',opacity=0.4,name='Upper limit')
-    fig2 = px.line_polar(r=Ro5_low, theta=categories, line_close=True,color_discrete_sequence=['red'])
-    fig2.update_traces(fill='toself',fillcolor='yellow',opacity=0.4,name='Lower limit')
-
-    fig1.data[0].showlegend=True
-    fig2.data[0].showlegend=True
-
-    Figure.add_trace(fig1.data[0])
-    Figure.add_trace(fig2.data[0])
-
-
-    color = color = [distinctipy.get_hex(c) for c in distinctipy.get_colors(n_colors=len(data.index),pastel_factor=0.7)]
-
-    for i,name in enumerate(data.index):
-        f=px.line_polar(r=list(data.loc[name]), theta=categories, line_close=True,color_discrete_sequence=[color[i]])
-        f.update_traces(name=name)
-        f.data[0].showlegend=True
-        Figure.add_trace(f.data[0])
-
-    Figure.update_layout( width=1200,height=700,
-      polar=dict(
-        radialaxis=dict(
-          visible=True)),showlegend=True,legend=dict(x=1.2, y=0.95),legend_orientation="h")
-
-    return Figure
-
 def compute_isotopic_mass(data_frame:pd.DataFrame, molformula_col:str) -> pd.DataFrame:
     '''
     This function computes the isotopic mass distribution of a given data frame using the pyOpenMS library.
@@ -144,41 +88,7 @@ def compute_isotopic_mass(data_frame:pd.DataFrame, molformula_col:str) -> pd.Dat
     
     return data_frame
 
-def plot_isotopic_masses(data_frame:pd.DataFrame, names_col:str,mass_distribution_col:str) -> go.Figure:
-    '''
-    This function plots the isotopic mass distribution of a given data frame using plotly.
-
-    Parameters:
-    - data_frame: a pandas data frame that contains the isotopic mass distribution as a column of strings, where each string has the format 'mass:probability;mass:probability;...'
-    - names_col: a string that specifies the name of the column that contains the compound names.
-    - mass_distribution_col: a string that specifies the name of the column that contains the isotopic mass distribution.
-
-    Returns:
-    - Figure: a plotly figure object that shows the bar plot of the isotopic mass distribution for each compound.
-
-    The function creates a copy of the data frame and drops any rows that have missing values in the mass distribution column. Then, it converts the mass distribution column from strings to dictionaries, where the keys are the masses and the values are the probabilities. It also resets the index of the data frame. Then, it iterates over the rows of the data frame and creates a bar plot for each compound using plotly express. It uses distinct colors for each compound and displays a legend on the right side of the plot.
-    '''
-    
-    masses=data_frame[[names_col,mass_distribution_col]]
-    masses.dropna(subset=[mass_distribution_col],inplace=True)
-    masses.mass_distribution=masses[mass_distribution_col].apply(lambda x: {float(value.split(':')[0]):float(value.split(':')[1]) for value in x.split(';')})
-    masses.reset_index(drop=True,inplace=True)
-
-    Figure = go.Figure()
-
-    color = [distinctipy.get_hex(c) for c in distinctipy.get_colors(n_colors=len(masses.index),pastel_factor=0.7)]
-
-    for index in masses.index:
-        f=px.bar(x=tuple(masses[mass_distribution_col][index].keys()), y=tuple(masses[mass_distribution_col][index].values()),color_discrete_sequence=[color[index]])
-        f.update_traces(name=masses[names_col][index])
-        f.data[0].showlegend=True
-        Figure.add_trace(f.data[0])
-
-    Figure.update_layout(width=1200,height=700,showlegend=True,legend=dict(x=1.2, y=0.95),legend_orientation="h",plot_bgcolor='rgba(0, 0, 0, 0)',font=dict(size=12),xaxis_title="Atomic Mass (u)",yaxis_title="Relative abundance (%)",title="Isotopic distribution")
-
-    return Figure
-
-def search_pubchem(data_frame,entry_col:str,entry_type:str='smiles') -> pd.DataFrame:
+def search_pubchem(data_frame:pd.DataFrame,entry_col:str,entry_type:str='smiles') -> pd.DataFrame:
     '''
     This function searches the PubChem database for compounds that match a given data frame of identifiers.
 
@@ -210,76 +120,85 @@ def search_pubchem(data_frame,entry_col:str,entry_type:str='smiles') -> pd.DataF
 
     return data_frame
 
+def classify_molecules(data_frame:pd.DataFrame,smiles_col:str,names_col:str):
+    '''
+    Classify molecules based on their SMILES strings.
 
-class ClassifyMolecules:
+    This function submits a query to the ClassyFire web service and returns a data frame with the classification results.
+
+    Parameters
+    ----------
+    data_frame : pd.DataFrame
+        The input data frame with the molecules information.
+    smiles_col : str
+        The name of the column that contains the SMILES strings.
+    names_col : str
+        The name of the column that contains the molecule names.
+
+    Returns
+    -------
+    pd.DataFrame
+        The output data frame with the classification results added as new columns.
+
+    Raises
+    ------
+    requests.exceptions.HTTPError
+        If the query to the ClassyFire web service fails.
+    '''
     
-    def __init__(self,data_frame:pd.DataFrame,col_smiles:str):
-        self.data_frame=copy.deepcopy(data_frame)
-        self.col_smiles=col_smiles
-        self.URL = 'http://classyfire.wishartlab.com'
+    URL = 'http://classyfire.wishartlab.com'
     
-    def _submit_query (self,label:str='Metabolites',query_type='STRUCTURE'):
+    def _submit_query (data_frame:pd.DataFrame, smiles_col:str, names_col:str, label:str='Metabolites',query_type='STRUCTURE'):
+
+        unique_mols=data_frame.drop_duplicates(subset=[names_col,smiles_col])
+
+        entries = [f"{unique_mols[names_col][index]}\t{unique_mols[smiles_col][index]}" for index in unique_mols.index]
         
-        query_pattern='\n'.join([smi for smi in self.data_frame[self.col_smiles]])
-        
+        query_pattern='\n'.join(entries)
+
         try:
-            q = requests.post(f'{self.URL}/queries', json={'label':label, 'query_input': query_pattern, 'query_type':query_type},
-                              headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
-            
+            q = requests.post(f'{URL}/queries', json={'label':'caca', 'query_input': query_pattern, 'query_type':'STRUCTURE','fstruc_content_type':'tsv'},
+                      headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
+
             return q.json()['id']
         except requests.exceptions.HTTPError as e:
             return e.response
 
-    def _get_query(self,query_id:str, data_format:str='json'):
+    def _get_query(query_id:str, data_format:str='json'):
         try:
-            r = requests.get(f'{self.URL}/queries/{query_id}.json', headers={'Accept': 'application/json'})
-            
+            r = requests.get(f'{URL}/queries/{query_id}.json', headers={'Accept': 'application/json'})
+
         except requests.exceptions.HTTPError as e:
             return e.response
-        
+
         return r.json()
-    
-    def _add_classification_to_df(self,data_frame,json_data):
-        for index in data_frame.index:
-            for k, val in json_data['entities'][index].items():
-                if 'name' in val:
-                    data_frame.loc[index,k]=val['name']
+
+    def _add_classification_to_df(data_frame,json_data,names_col):
+        data={}
+        for e in json_data['entities']:
+            cl={}
+            for k,v in e.items():
+                if 'name' in v:
+                    cl[k] = v['name']
                 if 'molecular_framework' in k:
-                    data_frame.loc[index,k]=val
+                    cl[k]=v
                 if 'substituents' in k:
-                    data_frame.loc[index,k]=';'.join(val)
-    
-    
-    def classify_molecules(self):
-        self.query_id=self._submit_query()
+                    cl[k]=';'.join(v)
+            data[e['identifier']]=cl
+
+        for index in data_frame.index:
+            try:
+                indx_class=data[data_frame[names_col][index]]
+                data_frame.loc[index, indx_class.keys()]= indx_class.values()
+            except Exception:
+                pass
         
-        self.classification_data=self._get_query(self.query_id)
-        
-        self._add_classification_to_df(self.data_frame,self.classification_data)
+        return data_frame
+            
+    data_frame=copy.deepcopy(data_frame)
     
+    job_id=_submit_query(data_frame,smiles_col,names_col)
+    results=_get_query(job_id)
+    data_frame_classification=_add_classification_to_df(data_frame,results,names_col)
     
-    
-    
-    
-    
-    
-    
-    '''
-    def _get_chemont_node(self,chemontid:str):
-        chemont_id = chemontid.replace('CHEMONTID:', 'C')
-        try:
-            r = requests.get(f'{self.URL}/tax_nodes/{chemont_id}.json', headers={'Accept': 'application/json'})
-            return r.json()
-        except requests.exceptions.HTTPError as e:
-            return e.response
-    
-    def _get_sequence_classification(self,fingerprint:str, format='json'):
-        try:
-            if format == 'json':
-                r = requests.get(f'{self.URL}/entities/{fingerprint}.{format}', headers={'Accept': 'application/json'})
-            else:
-                raise ValueError('Invalid format')
-        except requests.exceptions.HTTPError as e:
-            return e.response
-        return r.json()
-    '''
+    return data_frame_classification

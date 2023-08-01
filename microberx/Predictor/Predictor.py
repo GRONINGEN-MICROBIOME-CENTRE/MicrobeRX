@@ -5,6 +5,8 @@ from rdkit.Chem import AllChem,MACCSkeys, DataStructs
 import itertools, copy
 import pandas as pd
 
+import datamol as dm
+
 from tqdm.notebook import tqdm
 rdkit.RDLogger.DisableLog("rdApp.*")
 
@@ -71,7 +73,10 @@ class RunPredictionRule:
             for products in results:
                 try:
                     main_product = products[0]
-                    smi = Chem.MolToSmiles(main_product, isomericSmiles=False)
+                    fixed_mol = dm.fix_mol(main_product)
+                    fixed_mol = dm.sanitize_mol(fixed_mol)
+                    fixed_mol = dm.standardize_mol(fixed_mol)
+                    smi = Chem.MolToSmiles(fixed_mol, isomericSmiles=False, canonical=True)
 
                     main_product_atom_indexes, query_atoms_indexes = self.__get_product_atom_indexes(main_product)
                     
