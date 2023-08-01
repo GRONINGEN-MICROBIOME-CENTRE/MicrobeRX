@@ -1,6 +1,6 @@
 <img src="img/logo.png"  width="220" height="200">
 
-[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Citation**](#citation) | [**License**](#license) | [**Disclaimer**](#disclaimer)
+[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Examples**](#examples) | [**Citation**](#citation) | [**License**](#license) | [**Disclaimer**](#disclaimer)
 
 ## Description
 
@@ -14,7 +14,7 @@
 
 > This repository contains examples as Jupyter Notbooks showing the capabilities of this library.
 
-Question about usage or troubleshooting? Please leave a comment here
+Question about usage or troubleshooting? Please leave a comment in the discussion section of this repo
 
 ## Requirements
 
@@ -48,6 +48,16 @@ pip install MicrobeRX ## TODO
 
 > [MicrobeRX Colab]()
 
+
+## Examples
+
+> **Predicition scoring** <img src="img/scoring.png"  width="300" height="300">
+> **Metabolic accesibility** <img src="img/accesibility.png"  width="300" height="300">
+
+> **Molecular descriptors** <img src="img/descriptors.png"  width="300" height="300">
+> **Isotopic mass** <img src="img/mass.png"  width="300" height="300">
+  
+> **Relationships** <img src="img/sankey.png"  width="900" height="300">
 
 ## Citation
 
