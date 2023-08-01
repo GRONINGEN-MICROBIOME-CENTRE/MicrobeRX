@@ -268,7 +268,7 @@ def display_molecules(data_frame:pd.DataFrame, legends_col:str = 'metabolite_id'
     return view
 
 
-def plot_evidences(data_frame:pd.DataFrame,nodes:list=['reaction_id','metabolite_id']) -> go.Figure:
+def plot_relationships(data_frame:pd.DataFrame,nodes:list=['reaction_id','metabolite_id']) -> go.Figure:
     '''
     This function creates a Sankey diagram to visualize the evidences of metabolite annotations in a data frame.
 
