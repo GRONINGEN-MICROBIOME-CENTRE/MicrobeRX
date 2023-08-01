@@ -51,13 +51,13 @@ pip install MicrobeRX ## TODO
 
 ## Examples
 
-> **Predicition scoring** <img src="img/scoring.png"  width="300" height="300">
-> **Metabolic accesibility** <img src="img/accesibility.png"  width="300" height="300">
+> **Predicition scoring** <img src="img/scoring.png"  width="150" height="150">
+> **Metabolic accesibility** <img src="img/accesibility.png"  width="150" height="150">
 
-> **Molecular descriptors** <img src="img/descriptors.png"  width="300" height="300">
-> **Isotopic mass** <img src="img/mass.png"  width="300" height="300">
+> **Molecular descriptors** <img src="img/descriptors.png"  width="150" height="150">
+> **Isotopic mass** <img src="img/mass.png"  width="150" height="150">
   
-> **Relationships** <img src="img/sankey.png"  width="900" height="300">
+> **Relationships** <img src="img/sankey.png"  width="300" height="150">
 
 ## Citation
 
