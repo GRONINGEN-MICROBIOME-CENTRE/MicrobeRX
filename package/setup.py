@@ -7,7 +7,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = 'v0.1.0'
+VERSION = 'v0.1.1'
 DESCRIPTION = 'MicrobeRX is A tool for enzymatic reaction-based metabolite prediction in the gut microbiome.'
 #LONG_DESCRIPTION = ''
 
@@ -21,7 +21,7 @@ setup(
     long_description_content_type="text/markdown",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['rdkit', 'datamol', 'pyopenms', 'PubChemPy','pandas', 'plotly', 'mols2grid', 'distinctipy', 'numpy', 'matplotlib', 'tqdm'],
+    install_requires=['rdkit', 'datamol', 'pyopenms', 'PubChemPy','pandas', 'plotly', 'mols2grid', 'rxnmapper', 'distinctipy', 'numpy', 'matplotlib', 'tqdm'],
     keywords=['python', 'metabolite', 'prediction', 'microbiome', 'cheminformatics', 'metabolism'],
     classifiers=[
         "Development Status :: 1 - Planning",
