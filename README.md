@@ -1,6 +1,6 @@
 <img src="img/logo.png"  width="320" height="300">
 
-[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Examples**](#examples) | [**Citation**](#citation) | [**License**](#license) | [**Disclaimer**](#disclaimer)
+[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Examples**](#examples) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
 
 [![DOI](https://zenodo.org/badge/657648349.svg)](https://zenodo.org/badge/latestdoi/657648349)
 
@@ -65,6 +65,12 @@ If you use this software or its results in your research, publication, or projec
 
 ## License
 This tool is under GPL-3.0 license, see the LICENSE file for details.
+
+## Information
+
+- This release includes the functionalities to generate reaction rules
+- This release includes the functionalities to predict, analyze and visualize metabolites.
+- This release NOT includes yet the functionalities to find microorganism and enzymes. Sorry!
 
 ## Disclaimer 
 
