@@ -36,21 +36,15 @@ MicrobeRX is reliant on a variety of academic software. The Jupyter Dock.yaml fi
 
 ## Installation 
 
-**1. Installing MicrobeRX from Conda:**
-
-```
-conda install -c conda-forge MicrobeRX ## TODO
-```
-
-**2. Installing MicrobeRX from PIP:**
+**1. Installing MicrobeRX from PIP:**
 
 ```
 pip install MicrobeRX
 ```
 
-**3. GoogleColab:**
+**2. GoogleColab:**
 
-> [MicrobeRX Colab]()
+> [MicrobeRX Colab](https://shorturl.at/cpqu4)
 
 
 ## Examples
