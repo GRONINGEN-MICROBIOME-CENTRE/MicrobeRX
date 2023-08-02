@@ -2,6 +2,10 @@
 
 [**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Examples**](#examples) | [**Citation**](#citation) | [**License**](#license) | [**Disclaimer**](#disclaimer)
 
+[![DOI](https://zenodo.org/badge/657648349.svg)](https://zenodo.org/badge/latestdoi/657648349)
+
+![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FGRONINGEN-MICROBIOME-CENTRE%2FMicrobeRX&label=Views&labelColor=%23697689&countColor=%23ff8a65&style=flat)
+
 ## Description
 
 **MicrobeRX is A tool for enzymatic reaction-based metabolite prediction in the gut microbiome.** <br><br>
@@ -63,7 +67,7 @@ pip install MicrobeRX ## TODO
 
 If you use this software or its results in your research, publication, or project, please cite it as follows:
 
-> MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome reveals the drug metabolism landscape of gut microbes https://doi.org/
+> MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome [DOI: 10.5281/zenodo.8207746](https://zenodo.org/record/8207746)
 
 ## License
 This tool is under GPL-3.0 license, see the LICENSE file for details.
