@@ -45,7 +45,7 @@ conda install -c conda-forge MicrobeRX ## TODO
 **2. Installing MicrobeRX from PIP:**
 
 ```
-pip install MicrobeRX ## TODO
+pip install MicrobeRX
 ```
 
 **3. GoogleColab:**
