@@ -310,7 +310,7 @@ def plot_relationships(data_frame:pd.DataFrame,nodes:list=['reaction_id','metabo
     for i,col_pair in enumerate(column_pairs):
         grouped=table[col_pair].value_counts().reset_index(name='Values')
         grouped.columns=['Source_name','Target_name','Values']
-        sankey_table=sankey_table.append(grouped,ignore_index=True)
+        sankey_table=pd.concat([sankey_table,grouped],ignore_index=True)
 
     sankey_table['Source']=sankey_table.Source_name.map(lambda x: indexes.get(x))
     sankey_table['Target']=sankey_table.Target_name.map(lambda x: indexes.get(x))
