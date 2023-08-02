@@ -66,7 +66,7 @@ If you use this software or its results in your research, publication, or projec
 > MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome reveals the drug metabolism landscape of gut microbes https://doi.org/
 
 ## License
-These notebooks are under MIT, see the LICENSE file for details.
+This tool is under GPL-3.0 license, see the LICENSE file for details.
 
 ## Disclaimer 
 
