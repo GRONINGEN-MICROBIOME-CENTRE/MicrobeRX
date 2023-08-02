@@ -1,3 +1,17 @@
+'''
+Hello, dear user!
+
+We are glad you are interested in our awesome project. 
+However, we regret to inform you that we are still working on this part of the code. 
+Please don't be mad at us, we are doing our best to deliver a high-quality product as soon as possible. 
+In the meantime, you can check out our other features or watch some funny cat videos to pass the time. 
+We appreciate your patience and understanding. Thank you for your support and stay tuned for updates!
+
+Sincerely,
+Angel Ruiz
+'''
+
+
 from io import StringIO
 from multiprocessing import Pool
 import pandas as pd
