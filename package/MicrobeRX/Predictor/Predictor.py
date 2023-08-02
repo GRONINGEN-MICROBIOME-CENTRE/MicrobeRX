@@ -36,7 +36,7 @@ class MetabolitePredictor:
                     tmp_table['product'] = self.rules_table['product'][index]
                     tmp_table['num_atoms'] = self.rules_table.num_atoms[index]
                     tmp_table['reacting_atoms_efficiency'] = round(self.rules_table.num_atoms[index]/self.query_atoms_num,3)
-                    self.predicted_metabolites=pd.concat([predicted_metabolites,tmp_table],ignore_index=True)
+                    self.predicted_metabolites=pd.concat([self.predicted_metabolites,tmp_table],ignore_index=True)
             #except Exception:
                 #pass
         
