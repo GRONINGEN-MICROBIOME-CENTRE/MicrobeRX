@@ -64,7 +64,7 @@ def plot_molecular_descriptors(data_frame:pd.DataFrame, names_col:str) -> go.Fig
     Figure.add_trace(fig2.data[0])
 
 
-    color = color = [distinctipy.get_hex(c) for c in distinctipy.get_colors(n_colors=len(data.index),pastel_factor=0.7)]
+    color = [distinctipy.get_hex(c) for c in distinctipy.get_colors(n_colors=len(data.index),pastel_factor=0.7)]
 
     for i,name in enumerate(data.index):
         f=px.line_polar(r=list(data.loc[name]), theta=categories, line_close=True,color_discrete_sequence=[color[i]])
