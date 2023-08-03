@@ -12,3 +12,4 @@ REACTION_RULES      = files("MicrobeRX.DataBase").joinpath("ReactionRules.tsv.gz
 HUMAN_EVIDENCES     = files("MicrobeRX.DataBase").joinpath("HumanEvidences.tsv.gz")
 MICROBES_EVIDENCES  = files("MicrobeRX.DataBase").joinpath("MicrobesEvidences.tsv.gz")
 MICROBES_DATA       = files("MicrobeRX.DataBase").joinpath("MicrobesData.tsv.gz")
+MICROBES_REACTIONS  = files("MicrobeRX.DataBase").joinpath("MicrobesReactions.tsv.gz")
