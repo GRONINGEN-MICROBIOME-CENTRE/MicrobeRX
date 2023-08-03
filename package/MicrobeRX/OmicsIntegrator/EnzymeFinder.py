@@ -100,3 +100,4 @@ class GetUniprotData:
         self.uniprot_data.drop_duplicates(inplace=True,ignore_index=True)
         self.uniprot_data.columns=self.fields.values()
         self.uniprot_data.sort_values(by='SCORE',ascending=False,ignore_index=True,inplace=True)
+        
