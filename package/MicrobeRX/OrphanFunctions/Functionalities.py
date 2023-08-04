@@ -121,69 +121,6 @@ def PlotMetaboliteInfo(singleMetTable:pd.DataFrame, outfile: str = None):
         pass
     return F
 
-def PlotSunburst(singleMetabolite:pd.DataFrame,outfile: str = None,selection:str='all'):
-    """
-    Plots the sunburst diagram of the species of the given metabolite
-    
-    Parameters
-    ----------
-    singleMetabolite : pandas DataFrame
-        Dataframe containing the metabolite information
-    outfile : str, optional
-        Name of the file to save the plot as. (default is None)
-    selection : str, optional
-        Selects the evidences to include in the plot. (default is 'all')
-    """
-    if selection=='all':
-        singleMetabolite=singleMetabolite.copy()
-    else:
-        singleMetabolite=singleMetabolite[singleMetabolite.EVIDENCE.isin(selection)]
-        
-    extendedEC=singleMetabolite.assign(EC=singleMetabolite.reaction_EC.str.split(";")).explode('EC')[['METABOLITE_id','EC']].reset_index(drop=True)
-    extendedEC.EC.fillna('noEC',inplace=True)
-    extendedEC=extendedEC.merge(ec_summary,on='EC',how='left')
-    extendedEC.dropna(subset=['Organism'],inplace=True,)
-    extendedEC.reset_index(drop=True,inplace=True)
-    
-    display(extendedEC)
-    
-    subplots = len(extendedEC.index)
-    cols = 3
-    rows = subplots // cols 
-    if subplots-(rows*cols) >0:
-        rows += 1
-
-    matrix = [dict(row=r+1,column=c+1) for r in range(rows) for c in range(cols)]
-
-    specs=[[{"type": "domain"} for c in range(cols)] for r in range(rows)]
-
-    F = make_subplots(rows=rows, cols=cols,horizontal_spacing=0.02,vertical_spacing=0.1,specs=specs,subplot_titles=list(extendedEC.EC))
-
-    allSequences=pd.DataFrame()
-    for index in extendedEC.index:
-        ecTable=pd.read_csv(f'data/EC/{extendedEC.EC[index]}.tsv',sep='\t')
-
-        for iindex in ecTable.index:
-            ecTable['EVIDENCE']=extendedEC.EC[index]
-            tax_dict=GetLineage(ecTable.TAXONOMY[iindex])
-            ecTable.loc[iindex,list(tax_dict.keys())]=list(tax_dict.values())
-
-        allSequences=allSequences.append(ecTable,ignore_index=True)
-
-        gTable=ecTable.groupby(['SUPERKINGDOM','PHYLUM','FAMILY', 'GENUS','ORGANISM_name']).size().reset_index(['SUPERKINGDOM','PHYLUM','FAMILY', 'GENUS','ORGANISM_name'],name="Values")
-
-        fig1=px.sunburst(gTable,path=['SUPERKINGDOM','PHYLUM','FAMILY', 'GENUS','ORGANISM_name'], values='Values',color='PHYLUM',
-                         color_discrete_sequence=px.colors.qualitative.Pastel,branchvalues='total')
-
-        for d in fig1.data:
-            F.add_trace(d,row=matrix[index]['row'],col=matrix[index]['column'])
-
-    F.update_layout(grid= dict(rows=rows,columns=cols,),height=800*rows, width=800*cols, title_text=f"Species Sunburst")
-    if outfile:
-        F.write_image(outfile,height = 720,width=900,validate=True,scale=2)
-    else:
-        pass
-    return allSequences,F
 
 def PlotClusterMap(singleMetabolite:pd.DataFrame,outfile: str = None, selection:str='all',n_samples:int=75):
     """
