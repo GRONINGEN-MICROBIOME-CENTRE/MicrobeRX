@@ -18,6 +18,13 @@ __all__=['plot_species_sunburst']
 '''
 
 def check_if_microbes_databases_are_loaded():
+    '''
+    The function check_if_microbes_databases_are_loaded checks if the global variables MICROBES_DATA and MICROBES_REACTIONS are loaded with the data from the microbes databases. If not, it calls the functions load_microbes_data and load_microbes_reactions to load the data and assign it to the global variables.
+
+    Parameters: None
+
+    Returns: None
+    '''
     
     global MICROBES_DATA
     MICROBES_DATA=None
@@ -36,6 +43,17 @@ def check_if_microbes_databases_are_loaded():
 
 
 def plot_species_sunburst(sources:list,path:str='short'):
+    '''
+    The function plot_species_sunburst creates a sunburst plot of the microbial species in the sources list. It uses the global variables MICROBES_DATA and MICROBES_REACTIONS that are loaded by the function check_if_microbes_databases_are_loaded. It also uses the Plotly Express library to create the sunburst plot.
+
+    Parameters:
+
+    - sources: A list of strings that represent the source id of reactions from AGORA2. For example, ['CYSS3r'].
+    - path: A string that specifies the path of the sunburst plot. It can be either 'full' or 'short'. The default value is 'short'. If 'full', the path is ['Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']. If 'short', the path is ['Kingdom', 'Phylum', 'Order', 'Genus', 'Species'].
+    Returns:
+
+    F: A Plotly Figure object that contains the sunburst plot. It has one subplot for each source in the sources list. The subplots are arranged in a grid with three columns and variable rows. The sunburst plot shows the hierarchical distribution of the microbial species by their taxonomic ranks. The color of each segment is determined by the phylum of the species.
+    '''
     
     check_if_microbes_databases_are_loaded()
     
