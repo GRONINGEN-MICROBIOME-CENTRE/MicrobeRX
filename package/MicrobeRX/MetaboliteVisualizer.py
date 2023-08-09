@@ -141,7 +141,7 @@ def plot_confidence_scores(data_frame:pd.DataFrame,x:str='similarity_substrates'
                      )
     return fig
 
-def plot_metabolic_accesibility(data_frame:pd.DataFrame,molecule:Chem.Mol,atom_map_col:str='reacting_atoms_in_query', mol_name:str='Query', cmap: str = 'RdYlGn_r'):
+def plot_metabolic_accesibility(data_frame:pd.DataFrame,molecule:Chem.Mol,atom_map_col:str='reacting_atoms_in_query', mol_name:str='Query', alpha:float=0.5, cmap: str = 'RdYlGn_r'):
     '''
     This function creates a 2D image of a molecule with the atoms colored according to their metabolic accessibility, which is calculated as the frequency of the atom in the atom map column of the data frame. The function returns a matplotlib Figure object that can be displayed or modified.
 
@@ -165,7 +165,7 @@ def plot_metabolic_accesibility(data_frame:pd.DataFrame,molecule:Chem.Mol,atom_m
         """
         return (val - min(values)) / (max(values) - min(values))
 
-    color_atom_map = {k: [pyplot_cmap(_scale_value(v, atoms_counts.values()), alpha=0.1)] for k, v in atoms_counts.items()}
+    color_atom_map = {k: [pyplot_cmap(_scale_value(v, atoms_counts.values()), alpha=alpha)] for k, v in atoms_counts.items()}
     d2d = rdMolDraw2D.MolDraw2DCairo(1600,400)
     d2d.ClearDrawing()
     dos = d2d.drawOptions()
