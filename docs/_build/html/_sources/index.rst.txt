@@ -3,15 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to MicrobeRX's documentation!
+MicrobeRX's documentation
 =====================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-	
-   modules.rst
-
+   :maxdepth: 3
+   :caption: Tutorials:
+   
+   content/ReactionRules
+   content/PredictionMetabolites
+   
 Indices and tables
 ==================
 
