@@ -22,7 +22,7 @@ Question about usage or troubleshooting? Please leave a comment in the discussio
 
 ## Requirements
 
-MicrobeRX is reliant on a variety of academic software. The Jupyter Dock.yaml file contains all the tools and dependencies, but the following are some of the most noticeable:
+MicrobeRX is reliant on a variety of academic software. The following are some of the most noticeable:
 
 - rdkit
 - datamol
