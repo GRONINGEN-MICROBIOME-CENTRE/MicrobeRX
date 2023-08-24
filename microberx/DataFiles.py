@@ -8,11 +8,11 @@ from importlib_resources import files
 __all__ = ["load_reaction_rules", "load_human_evidences", 
            "load_microbes_evidences", "load_microbes_reactions", "load_microbes_data"]
 
-__REACTION_RULES      = files("package.MicrobeRX.DataBase").joinpath("ReactionRules.tsv.gz")
-__HUMAN_EVIDENCES     = files("package.MicrobeRX.DataBase").joinpath("HumanEvidences.tsv.gz")
-__MICROBES_EVIDENCES  = files("package.MicrobeRX.DataBase").joinpath("MicrobesEvidences.tsv.gz")
-__MICROBES_DATA       = files("package.MicrobeRX.DataBase").joinpath("MicrobesData.tsv.gz")
-__MICROBES_REACTIONS  = files("package.MicrobeRX.DataBase").joinpath("MicrobesReactions.tsv.gz")
+__REACTION_RULES      = files("microberx.DataBase").joinpath("ReactionRules.tsv.gz")
+__HUMAN_EVIDENCES     = files("microberx.DataBase").joinpath("HumanEvidences.tsv.gz")
+__MICROBES_EVIDENCES  = files("microberx.DataBase").joinpath("MicrobesEvidences.tsv.gz")
+__MICROBES_DATA       = files("microberx.DataBase").joinpath("MicrobesData.tsv.gz")
+__MICROBES_REACTIONS  = files("microberx.DataBase").joinpath("MicrobesReactions.tsv.gz")
 
 ''' 
 ################### DATABASES ###################
