@@ -1,6 +1,6 @@
 <img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/main/img/logo.png"  width="320" height="300">
 
-[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Examples**](#examples) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
+[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Workflow**](#workflow) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
 
 [![DOI](https://zenodo.org/badge/657648349.svg)](https://zenodo.org/badge/latestdoi/657648349)
 
@@ -55,9 +55,9 @@ python setup.py install
 > [MicrobeRX Colab](https://shorturl.at/cpqu4)
 
 
-## Examples
+## Workflow
 
-> **Capabilities** <img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/main/img/workflow.png"  width="200" height="600">
+<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/development/img/workflow.png"  width="400" height="600">
 
 ## Citation
 
