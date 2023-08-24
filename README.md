@@ -50,14 +50,14 @@ cd MicrobeRX
 python setup.py install
 ```
 
-**3. GoogleColab:**
+**3. Using MicrobeRX in GoogleColab:**
 
-> [MicrobeRX Colab](https://shorturl.at/cpqu4)
+[MicrobeRX Colab](https://shorturl.at/cpqu4)
 
 
 ## Workflow
 
-<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/development/img/workflow.png"  width="400" height="600">
+<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/development/img/workflow.png"  width="600" height="800">
 
 ## Citation
 
