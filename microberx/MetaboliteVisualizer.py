@@ -72,7 +72,7 @@ def plot_molecular_descriptors(data_frame:pd.DataFrame, names_col:str) -> go.Fig
         f.data[0].showlegend=True
         Figure.add_trace(f.data[0])
 
-    Figure.update_layout( width=1200,height=700,
+    Figure.update_layout( width=800,height=600,
       polar=dict(
         radialaxis=dict(
           visible=True)),showlegend=True,legend=dict(x=1.2, y=0.95),legend_orientation="h")
@@ -110,7 +110,7 @@ def plot_isotopic_masses(data_frame:pd.DataFrame, names_col:str,mass_distributio
         f.data[0].showlegend=True
         Figure.add_trace(f.data[0])
 
-    Figure.update_layout(width=1200,height=700,showlegend=True,legend=dict(x=1.2, y=0.95),legend_orientation="h",plot_bgcolor='rgba(0, 0, 0, 0)',font=dict(size=12),xaxis_title="Atomic Mass (u)",yaxis_title="Relative abundance (%)",title="Isotopic distribution")
+    Figure.update_layout(width=800,height=600,showlegend=True,legend=dict(x=1.2, y=0.95),legend_orientation="h",plot_bgcolor='rgba(0, 0, 0, 0)',font=dict(size=12),xaxis_title="Atomic Mass (u)",yaxis_title="Relative abundance (%)",title="Isotopic distribution")
 
     return Figure
 
@@ -129,7 +129,7 @@ def plot_confidence_scores(data_frame:pd.DataFrame,x:str='similarity_substrates'
     - plotly.Figure: The 3D scatter plot figure.
     ''' 
     fig = px.scatter_3d(data_frame, x='similarity_substrates', y='similarity_products', z='reacting_atoms_efficiency',color='confidence_score',range_color=[0,3],
-                color_continuous_scale=cmap,width=1000,height=800,opacity=0.0,hover_name='metabolite_id')
+                color_continuous_scale=cmap,width=800,height=600,opacity=0.0,hover_name='metabolite_id')
 
     fig.update_traces(marker_size = 5, showlegend=False,)
 
@@ -349,7 +349,7 @@ def plot_relationships(data_frame:pd.DataFrame,nodes:list=['reaction_id','metabo
 
     layout = dict(
         title = "Evidences",title_x=0.5,
-        height = 800,width=1400,
+        height = 600,width=1000,
         font = dict(size =12),)
 
     fig = go.Figure(data=data_trace, layout=layout)
