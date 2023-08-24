@@ -1,3 +1,19 @@
+"""
+This module contains functions to compute and analyze molecular properties and descriptors of metabolites using various libraries and web services.
+
+The module has the following functions:
+
+compute_molecular_descriptors: Computes some molecular descriptors for a given data frame of SMILES strings.
+compute_isotopic_mass: Computes the isotopic mass distribution of a given data frame using the pyOpenMS library.
+search_pubchem: Searches the PubChem database for compounds that match a given data frame of identifiers.
+classify_molecules: Classify molecules based on their SMILES strings using the ClassyFire web service.
+"""
+
+__version__ = "0.1.4"
+
+__all__ = ["compute_molecular_descriptors", "compute_isotopic_mass", "search_pubchem","classify_molecules"]
+          
+
 import requests, copy, random
 import pandas as pd
 import pubchempy as pcp
@@ -14,27 +30,29 @@ from rdkit.Chem import AllChem, Descriptors
 from tqdm.notebook import tqdm
 
 
-''' 
-################### TOOLKIT ###################
-'''
-
 def compute_molecular_descriptors(data_frame: pd.DataFrame, smiles_col:str) -> pd.DataFrame:
-    ''' 
-    This function computes some molecular descriptors for a given data frame of SMILES strings.
-    Parameters:
-    data_frame: a pandas data frame that contains SMILES strings of molecules
-    smiles_col: the name of the column that contains the SMILES strings
-    Returns:
+    """
+    Computes some molecular descriptors for a given data frame of SMILES strings.
 
-    data_frame: the same data frame as input, but with additional columns for each molecular descriptor computed. The descriptors are:
-        MolWt: the molecular weight of the molecule
-        LogP: the octanol-water partition coefficient of the molecule
-        NumHAcceptors: the number of hydrogen bond acceptors in the molecule
-        NumHDonors: the number of hydrogen bond donors in the molecule
-        NumRotatableBonds: the number of rotatable bonds in the molecule
-        TPSA: the topological polar surface area of the molecule
-        MolFormula: the molecular formula of the molecule 
-    '''
+    Parameters
+    ----------
+    data_frame : pd.DataFrame
+        A pandas data frame that contains SMILES strings of molecules.
+    smiles_col : str
+        The name of the column that contains the SMILES strings.
+
+    Returns
+    -------
+    data_frame : pd.DataFrame
+        The same data frame as input, but with additional columns for each molecular descriptor computed. The descriptors are:
+            - MolWt: the molecular weight of the molecule
+            - LogP: the octanol-water partition coefficient of the molecule
+            - NumHAcceptors: the number of hydrogen bond acceptors in the molecule
+            - NumHDonors: the number of hydrogen bond donors in the molecule
+            - NumRotatableBonds: the number of rotatable bonds in the molecule
+            - TPSA: the topological polar surface area of the molecule
+            - MolFormula: the molecular formula of the molecule 
+    """
     data_frame=copy.deepcopy(data_frame)
     for index in (data_frame.index):
         mol=Chem.MolFromSmiles(data_frame[smiles_col][index])
@@ -50,19 +68,23 @@ def compute_molecular_descriptors(data_frame: pd.DataFrame, smiles_col:str) -> p
     return data_frame
 
 def compute_isotopic_mass(data_frame:pd.DataFrame, molformula_col:str) -> pd.DataFrame:
-    '''
-    This function computes the isotopic mass distribution of a given data frame using the pyOpenMS library.
+    """
+    Computes the isotopic mass distribution of a given data frame using the pyOpenMS library.
 
-    Parameters:
-    - data_frame: a pandas data frame that contains the molecular formulas as a column.
-    - molformula_col: a string that specifies the name of the column that contains the molecular formulas.
+    Parameters
+    ----------
+    data_frame : pd.DataFrame
+        A pandas data frame that contains the molecular formulas as a column.
+    molformula_col : str
+        A string that specifies the name of the column that contains the molecular formulas.
 
-    Returns:
-    - data_frame: a pandas data frame that has two additional columns: 'probability_sum' and 'mass_distribution'.
+    Returns
+    -------
+    data_frame : pd.DataFrame
+        A pandas data frame that has two additional columns: 'probability_sum' and 'mass_distribution'. The 'probability_sum' column contains the sum of the probabilities of all isotopes for each molecular formula. The 'mass_distribution' column contains the mass and probability of each isotope as a string, separated by semicolons.
 
-    The function iterates over the rows of the data frame and uses the EmpiricalFormula class from pyOpenMS to create an object for each molecular formula. Then, it uses the CoarseIsotopePatternGenerator class to generate the isotopic mass distribution with a resolution of 4. It calculates the sum of the probabilities of all isotopes and stores it in the 'probability_sum' column. It also formats the mass and probability of each isotope as a string and stores it in the 'mass_distribution' column, separated by semicolons. If an exception occurs, the function skips the row and continues with the next one.
-    
-    Example:
+    Example
+    -------
     >>> import pandas as pd
     >>> from pyopenms import EmpiricalFormula, CoarseIsotopePatternGenerator
     >>> df = pd.DataFrame({'formula': ['C6H12O6', 'C2H4O2', 'C3H8O3']})
@@ -72,7 +94,7 @@ def compute_isotopic_mass(data_frame:pd.DataFrame, molformula_col:str) -> pd.Dat
     0  C6H12O6            1.0000  180.0634:100.0;181.0668:10.72;182.0701:1.176;183...
     1   C2H4O2            1.0000  60.0211:100.0;61.0245:11.08;62.0279:1.216;63.031...
     2   C3H8O3            0.9999  92.0473:100.0;93.0507:10.55;94.0541:1.159;95.057...
-    '''
+    """
     data_frame=copy.deepcopy(data_frame)      
     for index in (data_frame.index):
         try:
@@ -89,22 +111,26 @@ def compute_isotopic_mass(data_frame:pd.DataFrame, molformula_col:str) -> pd.Dat
     return data_frame
 
 def search_pubchem(data_frame:pd.DataFrame,entry_col:str,entry_type:str='smiles') -> pd.DataFrame:
-    '''
-    This function searches the PubChem database for compounds that match a given data frame of identifiers.
+    """
+    Searches the PubChem database for compounds that match a given data frame of identifiers.
 
-    Parameters:
-    - data_frame: a pandas data frame that contains the identifiers of the compounds to search for.
-    - entry_col: a string that specifies the name of the column that contains the identifiers.
-    - entry_type: a string that specifies the type of the identifiers, such as 'smiles', 'inchi', 'cid', etc. The default is 'smiles'.
+    Parameters
+    ----------
+    data_frame : pd.DataFrame
+        A pandas data frame that contains the identifiers of the compounds to search for.
+    entry_col : str
+        A string that specifies the name of the column that contains the identifiers.
+    entry_type : str, optional
+        A string that specifies the type of the identifiers, such as 'smiles', 'inchi', 'cid', etc. The default is 'smiles'.
 
-    Returns:
-    - data_frame: the same data frame as input, but with additional columns for each PubChem property retrieved. The properties are:
-        PubChem_CID: the PubChem compound identifier, separated by semicolons if there are multiple matches.
-        PubChem_SID: the PubChem substance identifier, separated by semicolons if there are multiple matches. Only the first three SIDs are shown.
-        PubChem_Synonyms: the synonyms of the compound, separated by semicolons if there are multiple matches.
-
-    The function iterates over the rows of the data frame and uses the pubchempy library to query the PubChem database for compounds that match the identifier in the specified column and namespace. It extracts the CIDs, SIDs and synonyms of the matching compounds and stores them in the corresponding columns of the data frame. If an exception occurs, the function skips the row and continues with the next one.
-    '''
+    Returns
+    -------
+    data_frame : pd.DataFrame
+        The same data frame as input, but with additional columns for each PubChem property retrieved. The properties are:
+            - PubChem_CID: the PubChem compound identifier, separated by semicolons if there are multiple matches.
+            - PubChem_SID: the PubChem substance identifier, separated by semicolons if there are multiple matches. Only the first three SIDs are shown.
+            - PubChem_Synonyms: the synonyms of the compound, separated by semicolons if there are multiple matches.
+    """
     for index in tqdm(data_frame.index):
         try:
             matches=pcp.get_compounds(data_frame[entry_col][index],namespace=entry_type)
@@ -121,7 +147,7 @@ def search_pubchem(data_frame:pd.DataFrame,entry_col:str,entry_type:str='smiles'
     return data_frame
 
 def classify_molecules(data_frame:pd.DataFrame,smiles_col:str,names_col:str):
-    '''
+    """
     Classify molecules based on their SMILES strings.
 
     This function submits a query to the ClassyFire web service and returns a data frame with the classification results.
@@ -138,13 +164,17 @@ def classify_molecules(data_frame:pd.DataFrame,smiles_col:str,names_col:str):
     Returns
     -------
     pd.DataFrame
-        The output data frame with the classification results added as new columns.
+        The output data frame with the classification results added as new columns. The columns are:
+            - kingdom: the name of the chemical kingdom of the molecule, such as 'Organic compounds', 'Inorganic compounds', etc.
+            - superclass: the name of the chemical superclass of the molecule, such as 'Lipids and lipid-like molecules', 'Organoheterocyclic compounds', etc.
+            - class: the name of the chemical class of the molecule, such as 'Steroids and steroid derivatives', 'Benzodiazepines', etc.
+            - subclass: the name of the chemical subclass of the molecule, such as 'Cholestane steroids', '1,4-benzodiazepines', etc.
 
     Raises
     ------
     requests.exceptions.HTTPError
         If the query to the ClassyFire web service fails.
-    '''
+    """
     
     URL = 'http://classyfire.wishartlab.com'
     
