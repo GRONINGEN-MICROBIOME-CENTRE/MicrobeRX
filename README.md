@@ -1,4 +1,4 @@
-<img src="img/logo.png"  width="320" height="300">
+<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/main/img/logo.png"  width="320" height="300">
 
 [**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Examples**](#examples) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
 
@@ -42,20 +42,22 @@ MicrobeRX is reliant on a variety of academic software. The Jupyter Dock.yaml fi
 pip install MicrobeRX
 ```
 
-**2. GoogleColab:**
+**2. Installing MicrobeRX from source:**
+
+```
+git clone https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX.git
+cd MicrobeRX
+python setup.py install
+```
+
+**3. GoogleColab:**
 
 > [MicrobeRX Colab](https://shorturl.at/cpqu4)
 
 
 ## Examples
 
-> **Predicition scoring** <img src="img/scoring.png"  width="200" height="200">
-> **Metabolic accesibility** <img src="img/accesibility.png"  width="150" height="200">
-
-> **Molecular descriptors** <img src="img/descriptors.png"  width="200" height="200">
-> **Isotopic mass** <img src="img/mass.png"  width="200" height="200">
-  
-> **Relationships** <img src="img/sankey.png"  width="500" height="300">
+> **Capabilities** <img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/main/img/workflow.png"  width="200" height="600">
 
 ## Citation
 
