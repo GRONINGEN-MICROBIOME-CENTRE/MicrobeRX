@@ -11,14 +11,14 @@ __version__ = "0.2.0"
 
 __all__ = ["DataFiles","RuleGenerator", "MetabolitePredictor","MetaboliteAnalyzer", "MetaboliteVisualizer"]
 
-from .RuleGenerator import *
+#from .RuleGenerator import *
 
 from .DataFiles import *
 
-from .MetabolitePredictor import *
+#from .MetabolitePredictor import *
 
-from .MetaboliteAnalyzer import *
+#from .MetaboliteAnalyzer import *
 
-from .MetaboliteVisualizer import *
+#from .MetaboliteVisualizer import *
 
-print("MicrobeRX tools imported successfully.")
+print("MicrobeRX tools imported successfully")

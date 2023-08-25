@@ -20,7 +20,7 @@ __all__ = ["load_reaction_rules", "load_human_evidences",
 
 
 from importlib_resources import files
-import pandas as pd
+#import pandas as pd
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

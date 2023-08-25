@@ -163,6 +163,7 @@ class RunPredictionRule:
         editable_mol = Chem.EditableMol(mol_target)
         for atom_id in sorted(atom_indexes_to_remove, reverse=True):
             editable_mol.RemoveAtom(atom_id)
+    
         return editable_mol.GetMol()
     
     def __compute_similarity(self,mol1:Chem.Mol, mol2:Chem.Mol,fingerPrintModel:str='maccskey'):

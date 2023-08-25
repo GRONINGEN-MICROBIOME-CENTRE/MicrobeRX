@@ -136,7 +136,7 @@ def plot_isotopic_masses(data_frame:pd.DataFrame, names_col:str,mass_distributio
     return Figure
 
 def plot_confidence_scores(data_frame:pd.DataFrame,x:str='similarity_substrates',y:str='similarity_products',z:str='reacting_atoms_efficiency',cmap: str = 'RdYlGn'):
-        """
+    """
     Creates a 3D scatter plot of the data frame with the x, y, and z axes representing the similarity of substrates, products, and reacting atoms efficiency respectively.
 
     Parameters
@@ -177,7 +177,7 @@ def plot_confidence_scores(data_frame:pd.DataFrame,x:str='similarity_substrates'
     return fig
 
 def plot_metabolic_accesibility(data_frame:pd.DataFrame,molecule:Chem.Mol,atom_map_col:str='reacting_atoms_in_query', mol_name:str='Query', alpha:float=0.5, cmap: str = 'RdYlGn_r'):
-      """
+    """
     Creates a 2D image of a molecule with the atoms colored according to their metabolic accessibility.
 
     Parameters
