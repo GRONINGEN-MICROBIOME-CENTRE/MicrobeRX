@@ -1,7 +1,7 @@
 """
 Rule Generator
 """
-__version__ = "0.1.4"
+__version__ = "0.2.0"
 
 __all__ = ["load_reaction_rules", "load_human_evidences", 
            "load_microbes_evidences", "load_microbes_reactions", "load_microbes_data"]
@@ -9,7 +9,6 @@ __all__ = ["load_reaction_rules", "load_human_evidences",
 
 
 import copy, subprocess
-import rdkit
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdqueries, DataStructs,MACCSkeys
 

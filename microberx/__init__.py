@@ -21,6 +21,4 @@ from .MetaboliteAnalyzer import *
 
 from .MetaboliteVisualizer import *
 
-from .MetaboliteVisualizer import *
-
 print("MicrobeRX tools imported successfully.")

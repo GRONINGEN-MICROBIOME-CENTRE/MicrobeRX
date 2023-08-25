@@ -6,6 +6,8 @@
 
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FGRONINGEN-MICROBIOME-CENTRE%2FMicrobeRX&label=Views&labelColor=%23697689&countColor=%23ff8a65&style=flat)
 
+[MicrobeRX GitHub](https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX)
+
 ## Description
 
 **MicrobeRX is A tool for enzymatic reaction-based metabolite prediction in the gut microbiome.** <br><br>
