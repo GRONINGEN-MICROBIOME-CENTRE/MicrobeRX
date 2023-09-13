@@ -1,3 +1,12 @@
+"""
+Metabolite visualizator
+"""
+
+__version__ = "0.1.4"
+
+__all__ = ["plot_molecular_descriptors", "plot_isotopic_masses", 
+           "plot_confidence_scores", "plot_metabolic_accesibility", "display_molecules","plot_relationships"]
+
 import io, copy
 import pandas as pd
 import numpy as np
@@ -12,6 +21,7 @@ from distinctipy import distinctipy
 from rdkit import Chem
 from rdkit.Chem import AllChem, Draw
 from rdkit.Chem.Draw import rdMolDraw2D
+
 from PIL import Image
 
 import mols2grid
@@ -19,23 +29,27 @@ import mols2grid
 import warnings
 warnings.filterwarnings('ignore')
 
-''' 
-################### TOOLKIT ###################
-'''
-
 def plot_molecular_descriptors(data_frame:pd.DataFrame, names_col:str) -> go.Figure:
-    '''
-    This function plots the molecular descriptors of a given data frame using polar coordinates.
+    """
+    Plots the molecular descriptors of a given data frame using polar coordinates.
 
-    Parameters:
-    - data_frame: a pandas data frame that contains the molecular descriptors as columns and the compound names as rows.
-    - names_col: a string that specifies the name of the column that contains the compound names.
+    Parameters
+    ----------
+    data_frame : pd.DataFrame
+        A pandas data frame that contains the molecular descriptors as columns and the compound names as rows.
+    names_col : str
+        A string that specifies the name of the column that contains the compound names.
 
-    Returns:
-    - Figure: a plotly figure object that shows the polar plot of the molecular descriptors.
-
-    The function normalizes the molecular descriptors to fit in the range [0, 1] and then plots them as radial lines for each compound. The function also plots the upper and lower limits of the Lipinski's rule of five as shaded regions in orange and yellow, respectively. The function uses distinct colors for each compound and displays a legend on the right side of the plot.
-    '''
+    Returns
+    -------
+    Figure : plotly.graph_objects.Figure
+        A plotly figure object that shows the polar plot of the molecular descriptors. The plot has the following features:
+            - The radial axis represents the normalized value of each molecular descriptor, ranging from 0 to 1.
+            - The angular axis represents the different molecular descriptors, such as MolWt, LogP, NumHAcceptors, etc.
+            - Each compound is plotted as a radial line with a distinct color and a marker at each descriptor value.
+            - The upper and lower limits of the Lipinski's rule of five are plotted as shaded regions in orange and yellow, respectively. The rule of five states that most drug-like molecules have molecular weight less than 500, LogP less than 5, number of hydrogen bond acceptors less than 10, and number of hydrogen bond donors less than 5.
+            - A legend is displayed on the right side of the plot, showing the name and color of each compound.
+    """
         
     data=pd.DataFrame(index=list(data_frame[names_col])) 
     data['MolWt']=[i/500 for i in data_frame['MolWt']]
@@ -80,19 +94,27 @@ def plot_molecular_descriptors(data_frame:pd.DataFrame, names_col:str) -> go.Fig
     return Figure
 
 def plot_isotopic_masses(data_frame:pd.DataFrame, names_col:str,mass_distribution_col:str) -> go.Figure:
-    '''
-    This function plots the isotopic mass distribution of a given data frame using plotly.
+    """
+    Plots the isotopic mass distribution of a given data frame using plotly.
 
-    Parameters:
-    - data_frame: a pandas data frame that contains the isotopic mass distribution as a column of strings, where each string has the format 'mass:probability;mass:probability;...'
-    - names_col: a string that specifies the name of the column that contains the compound names.
-    - mass_distribution_col: a string that specifies the name of the column that contains the isotopic mass distribution.
+    Parameters
+    ----------
+    data_frame : pd.DataFrame
+        A pandas data frame that contains the isotopic mass distribution as a column of strings, where each string has the format 'mass:probability;mass:probability;...'
+    names_col : str
+        A string that specifies the name of the column that contains the compound names.
+    mass_distribution_col : str
+        A string that specifies the name of the column that contains the isotopic mass distribution.
 
-    Returns:
-    - Figure: a plotly figure object that shows the bar plot of the isotopic mass distribution for each compound.
-
-    The function creates a copy of the data frame and drops any rows that have missing values in the mass distribution column. Then, it converts the mass distribution column from strings to dictionaries, where the keys are the masses and the values are the probabilities. It also resets the index of the data frame. Then, it iterates over the rows of the data frame and creates a bar plot for each compound using plotly express. It uses distinct colors for each compound and displays a legend on the right side of the plot.
-    '''
+    Returns
+    -------
+    Figure : plotly.graph_objects.Figure
+        A plotly figure object that shows the bar plot of the isotopic mass distribution for each compound. The plot has the following features:
+            - The x-axis represents the mass values of the isotopes, rounded to four decimal places.
+            - The y-axis represents the probability values of the isotopes, multiplied by 100 and rounded to four decimal places.
+            - Each compound is plotted as a group of bars with a distinct color and a label at the top of each bar.
+            - A legend is displayed on the right side of the plot, showing the name and color of each compound.
+    """
     
     data_frame=copy.deepcopy(data_frame)
     masses=data_frame[[names_col,mass_distribution_col]]
@@ -115,19 +137,33 @@ def plot_isotopic_masses(data_frame:pd.DataFrame, names_col:str,mass_distributio
     return Figure
 
 def plot_confidence_scores(data_frame:pd.DataFrame,x:str='similarity_substrates',y:str='similarity_products',z:str='reacting_atoms_efficiency',cmap: str = 'RdYlGn'):
-    '''
-    This function creates a 3D scatter plot of the data frame with the x, y, and z axes representing the similarity of substrates, products, and reacting atoms efficiency respectively. The color of each point indicates the confidence score of the corresponding metabolite id. The function returns a plotly Figure object that can be displayed or modified.
+    """
+    Creates a 3D scatter plot of the data frame with the x, y, and z axes representing the similarity of substrates, products, and reacting atoms efficiency respectively.
 
-    Parameters:
-    - data_frame (pd.DataFrame): The data frame containing the columns ‘similarity_substrates’, ‘similarity_products’, ‘reacting_atoms_efficiency’, ‘confidence_score’, and ‘metabolite_id’.
-    - x (str, optional): The name of the column to use as the x-axis. Defaults to ‘similarity_substrates’.
-    - y (str, optional): The name of the column to use as the y-axis. Defaults to ‘similarity_products’.
-    - z (str, optional): The name of the column to use as the z-axis. Defaults to ‘reacting_atoms_efficiency’.
-    - cmap (str, optional): The name of the color map to use for the color scale. Defaults to ‘RdYlGn’.
-    
-    Returns:
-    - plotly.Figure: The 3D scatter plot figure.
-    ''' 
+    Parameters
+    ----------
+    data_frame : pd.DataFrame
+        The data frame containing the columns ‘similarity_substrates’, ‘similarity_products’, ‘reacting_atoms_efficiency’, ‘confidence_score’, and ‘metabolite_id’.
+    x : str, optional
+        The name of the column to use as the x-axis. Defaults to ‘similarity_substrates’.
+    y : str, optional
+        The name of the column to use as the y-axis. Defaults to ‘similarity_products’.
+    z : str, optional
+        The name of the column to use as the z-axis. Defaults to ‘reacting_atoms_efficiency’.
+    cmap : str, optional
+        The name of the color map to use for the color scale. Defaults to ‘RdYlGn’.
+
+    Returns
+    -------
+    plotly.Figure
+        The 3D scatter plot figure. The figure has the following features:
+            - The x-axis represents the similarity of substrates, ranging from 0 to 1.
+            - The y-axis represents the similarity of products, ranging from 0 to 1.
+            - The z-axis represents the reacting atoms efficiency, ranging from 0 to 1.
+            - The color of each point indicates the confidence score of the corresponding metabolite id, ranging from 0 to 1. A color bar is displayed on the right side of the plot.
+            - The hover text of each point shows the metabolite id and the values of x, y, z, and color.
+            - The title of the plot shows the names of the columns used for x, y, z, and color.
+    """
     fig = px.scatter_3d(data_frame, x='similarity_substrates', y='similarity_products', z='reacting_atoms_efficiency',color='confidence_score',range_color=[0,3],
                 color_continuous_scale=cmap,width=800,height=600,opacity=0.0,hover_name='metabolite_id')
 
@@ -142,18 +178,33 @@ def plot_confidence_scores(data_frame:pd.DataFrame,x:str='similarity_substrates'
     return fig
 
 def plot_metabolic_accesibility(data_frame:pd.DataFrame,molecule:Chem.Mol,atom_map_col:str='reacting_atoms_in_query', mol_name:str='Query', alpha:float=0.5, cmap: str = 'RdYlGn_r'):
-    '''
-    This function creates a 2D image of a molecule with the atoms colored according to their metabolic accessibility, which is calculated as the frequency of the atom in the atom map column of the data frame. The function returns a matplotlib Figure object that can be displayed or modified.
+    """
+    Creates a 2D image of a molecule with the atoms colored according to their metabolic accessibility.
 
-    Parameters:
-    - data_frame (pd.DataFrame): The data frame containing the column with the atom map information.
-    - atom_map_col (str): The name of the column with the atom map information. The column should contain lists of integers representing the atom indices.
-    - molecule (Chem.Mol): The molecule object to be drawn.
-    - cmap (str, optional): The name of the color map to use for the color scale. Defaults to ‘RdYlGn_r’.
-    
-    Returns:
-    - matplotlib.Figure: The 2D image figure
-    '''
+    Parameters
+    ----------
+    data_frame : pd.DataFrame
+        The data frame containing the column with the atom map information.
+    molecule : Chem.Mol
+        The molecule object to be drawn.
+    atom_map_col : str, optional
+        The name of the column with the atom map information. The column should contain lists of integers representing the atom indices. Defaults to 'reacting_atoms_in_query'.
+    mol_name : str, optional
+        The name of the molecule to be displayed on the image. Defaults to 'Query'.
+    alpha : float, optional
+        The transparency level of the atom colors, ranging from 0 to 1. Defaults to 0.5.
+    cmap : str, optional
+        The name of the color map to use for the color scale. Defaults to 'RdYlGn_r'.
+
+    Returns
+    -------
+    matplotlib.Figure
+        The 2D image figure. The figure has the following features:
+            - The molecule is drawn in a 2D projection with the atom symbols and bond types shown.
+            - The atoms are colored according to their metabolic accessibility, which is calculated as the frequency of the atom in the atom map column of the data frame. The color scale ranges from red (low accessibility) to green (high accessibility).
+            - A color bar is displayed on the right side of the image, showing the values of the metabolic accessibility.
+            - The name of the molecule is displayed on the top left corner of the image.
+    """
 
     reacting_atoms=[a for l in data_frame[atom_map_col] for a in l]
     pyplot_cmap = plt.get_cmap(cmap)
@@ -204,20 +255,34 @@ def plot_metabolic_accesibility(data_frame:pd.DataFrame,molecule:Chem.Mol,atom_m
     return fig
 
 def display_molecules(data_frame:pd.DataFrame, legends_col:str = 'metabolite_id', smiles_col:str = 'main_product_smiles',scale_from_column:str = 'confidence_score',columns_to_display:list = ['reaction_id'],cmap:str='RdYlGn'):
-    '''
-    This function displays a grid of molecules from a data frame, using different colors to indicate the values of a specified column.
+    """
+    Displays a grid of molecules from a data frame, using different colors to indicate the values of a specified column.
 
-    Parameters:
-    - data_frame: A pandas data frame containing the molecular data.
-    - legends_col: The name of the column to use as the legend for each molecule. Default is ‘metabolite_id’.
-    - smiles_col: The name of the column containing the SMILES strings for each molecule. Default is ‘main_product_smiles’.
-    - scale_from_column: The name of the column to use for scaling the colors of the molecules. Default is ‘confidence_score’.
-    - columns_to_display: A list of column names to display as tooltips when hovering over the molecules. Default is [‘reaction_id’].
-    - cmap: The name of the matplotlib colormap to use for coloring the molecules. Default is ‘RdYlGn’.
-    
-    Returns:
-    - A mols2grid display object that shows the grid of molecules with legends, colors and tooltips.
-    '''
+    Parameters
+    ----------
+    data_frame : pd.DataFrame
+        A pandas data frame containing the molecular data.
+    legends_col : str, optional
+        The name of the column to use as the legend for each molecule. Default is ‘metabolite_id’.
+    smiles_col : str, optional
+        The name of the column containing the SMILES strings for each molecule. Default is ‘main_product_smiles’.
+    scale_from_column : str, optional
+        The name of the column to use for scaling the colors of the molecules. Default is ‘confidence_score’.
+    columns_to_display : list, optional
+        A list of column names to display as tooltips when hovering over the molecules. Default is [‘reaction_id’].
+    cmap : str, optional
+        The name of the matplotlib colormap to use for coloring the molecules. Default is ‘RdYlGn’.
+
+    Returns
+    -------
+    mols2grid.display
+        A mols2grid display object that shows the grid of molecules with legends, colors and tooltips. The display object has the following features:
+            - Each molecule is drawn in a 2D projection with the atom symbols and bond types shown.
+            - The legend of each molecule is displayed below the image, using the value from the legends_col column.
+            - The color of each molecule is determined by the value from the scale_from_column column, using the cmap colormap. A color bar is displayed on the top right corner of the grid, showing the range of values.
+            - The tooltip of each molecule is displayed when hovering over the image, showing the values from the columns_to_display list.
+            - The grid can be filtered, sorted and searched by using the widgets on the top left corner of the grid.
+    """
         
     def _cmap_map(function, pyplot_cmap): 
         """ Applies function (which should operate on vectors of shape 3: [r, g, b]), on colormap cmap.
@@ -269,16 +334,28 @@ def display_molecules(data_frame:pd.DataFrame, legends_col:str = 'metabolite_id'
 
 
 def plot_relationships(data_frame:pd.DataFrame,nodes:list=['reaction_id','metabolite_id']) -> go.Figure:
-    '''
-    This function creates a Sankey diagram to visualize the evidences of metabolite annotations in a data frame.
+    """
+    Creates a Sankey diagram to visualize the evidences of metabolite annotations in a data frame.
 
-    Parameters:
-    - data_frame: A pandas data frame that contains the metabolite annotations and their evidences.
-    - nodes: A list of column names that represent the nodes of the Sankey diagram. The default value is [‘reaction_id’, ‘metabolite_id’].
-    
-    Returns:
-    - A plotly Figure object that contains the Sankey diagram.
-    '''
+    Parameters
+    ----------
+    data_frame : pd.DataFrame
+        A pandas data frame that contains the metabolite annotations and their evidences.
+    nodes : list, optional
+        A list of column names that represent the nodes of the Sankey diagram. The default value is [‘reaction_id’, ‘metabolite_id’].
+
+    Returns
+    -------
+    plotly.Figure
+        A plotly figure object that contains the Sankey diagram. The diagram has the following features:
+            - The nodes are arranged horizontally from left to right, corresponding to the order of the columns in the nodes list.
+            - The links are drawn as curved lines connecting the nodes, representing the flow of evidences from one node to another.
+            - The width of each link is proportional to the number of evidences for that pair of nodes.
+            - The color of each link is determined by the color of the source node, using a distinct color for each node.
+            - The label of each node is displayed on top of the node, using the value from the corresponding column in the data frame.
+            - The tooltip of each link shows the source and target node names and the number of evidences for that link.
+            - The title of the diagram shows the names of the columns used for the nodes.
+    """
     table=copy.deepcopy(data_frame)
     table=data_frame[nodes]
     for col in table.columns:

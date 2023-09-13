@@ -2,6 +2,9 @@
 Main class to predict metabolism of Xenobiotics
 ====================================================
 """
+__version__ = "0.1.4"
+
+__all__=['MetabolitePredictor','RunPredictionRule']
 
 import rdkit
 from rdkit import Chem
@@ -15,7 +18,6 @@ import datamol as dm
 from tqdm.notebook import tqdm
 rdkit.RDLogger.DisableLog("rdApp.*")
 
-__all__=['MetabolitePredictor','RunPredictionRule']
 
 class MetabolitePredictor:
     def __init__(self, rules_table:str):
@@ -161,6 +163,7 @@ class RunPredictionRule:
         editable_mol = Chem.EditableMol(mol_target)
         for atom_id in sorted(atom_indexes_to_remove, reverse=True):
             editable_mol.RemoveAtom(atom_id)
+    
         return editable_mol.GetMol()
     
     def __compute_similarity(self,mol1:Chem.Mol, mol2:Chem.Mol,fingerPrintModel:str='maccskey'):

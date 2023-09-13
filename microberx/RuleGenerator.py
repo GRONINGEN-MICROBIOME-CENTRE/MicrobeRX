@@ -1,5 +1,13 @@
+"""
+Rule Generator
+"""
+__version__ = "0.2.0"
+
+__all__ = ["SanitizeReaction", "MapReaction", 
+           "SetReactionIds", "ReverseReaction", "GenerateSingleReactantReactions","GenerateRules"]
+
+
 import copy, subprocess
-import rdkit
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdqueries, DataStructs,MACCSkeys
 
@@ -11,28 +19,29 @@ rxn_mapper = RXNMapper()
 import pandas as pd
 import re
 
-''' 
-###################  REACTION TOOLKIT ###################
-'''
-
 from importlib_resources import files
 
-REACTION_DECODER = files("microberx.RuleGenerator.bin").joinpath("RTD.jar")
+REACTION_DECODER = files("microberx.bin").joinpath("RTD.jar")
 
-''' 
-###################  REACTION TOOLKIT ###################
-'''
 
-def SanitizeReaction (target_reaction:AllChem.ChemicalReaction) -> AllChem.ChemicalReaction:
-    '''
+def SanitizeReaction (target_reaction:AllChem.ChemicalReaction):
+    """
     Sanitizes a chemical reaction by removing stereochemistry, replacing dummy atoms with carbon, and standardizing the molecules.
 
-    Parameters:
-        target_reaction (AllChem.ChemicalReaction): The input chemical reaction to be sanitized.
+    Parameters
+    ----------
+    target_reaction : AllChem.ChemicalReaction
+        The input chemical reaction to be sanitized.
 
-    Returns:
-        fixed_reaction (AllChem.ChemicalReaction): The output chemical reaction after sanitization.
-    '''
+    Returns
+    -------
+    fixed_reaction : AllChem.ChemicalReaction
+        The output chemical reaction after sanitization. The fixed reaction has the following features:
+            - The stereochemistry of the reactants and products is removed, as it may not be relevant or accurate for the reaction.
+            - The dummy atoms (*) in the reactants and products are replaced with carbon atoms (#6), as they may represent unspecified groups or atoms.
+            - The reactants and products are sanitized and standardized using the dm module, which performs operations such as kekulization, neutralization, tautomerization, etc.
+            - The 2D coordinates of the reactants and products are computed using the AllChem.Compute2DCoords function, which may improve the visualization of the reaction.
+    """
     def _replace_dummy_atoms(mol: Chem.Mol): ## Performs a molecular sanitization, removes stereochemistry and replaces dummy atoms
         dummy_query = Chem.MolFromSmiles('*')
         fixed_mol=AllChem.ReplaceSubstructs(mol,dummy_query,Chem.MolFromSmiles('[#6]'),replaceAll=True,useChirality=False)[0]
@@ -58,17 +67,27 @@ def SanitizeReaction (target_reaction:AllChem.ChemicalReaction) -> AllChem.Chemi
     return fixed_reaction
 
 
-def MapReaction (reaction_smiles:str=None, mapper:str='RXNMapper') -> AllChem.ChemicalReaction:
-    '''
+def MapReaction (reaction_smiles:str=None, mapper:str='RXNMapper'):
+    """
     Maps the atoms of a chemical reaction using either RXNMapper or ReactionDecoder.
 
-    Parameters:
-        reaction_smiles (str): The input chemical reaction in SMILES format.
-        mapper (str): The name of the mapper to use. Either 'RXNMapper' or 'ReactionDecoder'. Default is 'RXNMapper'.
+    Parameters
+    ----------
+    reaction_smiles : str, optional
+        The input chemical reaction in SMILES format. Default is None.
+    mapper : str, optional
+        The name of the mapper to use. Either 'RXNMapper' or 'ReactionDecoder'. Default is 'RXNMapper'.
 
-    Returns:
-        mapped_reaction (AllChem.ChemicalReaction): The output rdkit chemical reaction with atom mapping.
-    '''
+    Returns
+    -------
+    mapped_reaction : AllChem.ChemicalReaction
+        The output rdkit chemical reaction with atom mapping. The mapped reaction has the following features:
+            - The reactants and products are the same as the input reaction, but with atom numbers added to each atom symbol.
+            - The atom numbers indicate the correspondence between the atoms in the reactants and products, according to the mapper algorithm.
+            - The atom numbers are enclosed in square brackets and separated by colons, such as [1:2], meaning that atom 1 in the reactant becomes atom 2 in the product.
+            - The atom numbers are consistent with the SMILES notation, meaning that they follow the order of appearance of the atoms in the SMILES string.
+            - The bond types and stereochemistry of the reaction are preserved in the mapped reaction.
+    """
     def _reaction_decoder(reaction_smiles:str):
         out=subprocess.call(['java', '-jar', REACTION_DECODER,'-Q', 'SMI', '-q', reaction_smiles, '-c', '-j', 'AAM', '-f', 'TEXT'],timeout=360)
         mapped_rxn=AllChem.ReactionFromRxnFile('ECBLAST_smiles_AAM.rxn')
@@ -84,18 +103,27 @@ def MapReaction (reaction_smiles:str=None, mapper:str='RXNMapper') -> AllChem.Ch
 
     return mapped_reaction
 
-def SetReactionIds(reference_reaction:AllChem.ChemicalReaction, target_reaction:AllChem.ChemicalReaction, reaction_ids:str) -> AllChem.ChemicalReaction:
-    '''
+def SetReactionIds(reference_reaction:AllChem.ChemicalReaction, target_reaction:AllChem.ChemicalReaction, reaction_ids:str): 
+    """
     Sets the IDs of the reactants and products of a target reaction based on their molecular formulas and a reference reaction.
 
-    Parameters:
-        reference_reaction (AllChem.ChemicalReaction): The reference chemical reaction that has the same reactants and products as the target reaction, but in a different order or orientation.
-        target_reaction (AllChem.ChemicalReaction): The target chemical reaction that needs to have its IDs set.
-        reaction_ids (str): The IDs of the reactants and products of the reference reaction, in the format of 'R1.R2.>>P1.P2.', where R1, R2, P1, P2 are the IDs.
+    Parameters
+    ----------
+    reference_reaction : AllChem.ChemicalReaction
+        The reference chemical reaction that has the same reactants and products as the target reaction, but in a different order or orientation.
+    target_reaction : AllChem.ChemicalReaction
+        The target chemical reaction that needs to have its IDs set.
+    reaction_ids : str
+        The IDs of the reactants and products of the reference reaction, in the format of 'R1.R2.>>P1.P2.', where R1, R2, P1, P2 are the IDs.
 
-    Returns:
-        target_reaction (AllChem.ChemicalReaction): The target chemical reaction with its IDs set according to the reference reaction and the reaction_ids.
-    '''
+    Returns
+    -------
+    target_reaction : AllChem.ChemicalReaction
+        The target chemical reaction with its IDs set according to the reference reaction and the reaction_ids. The target reaction has the following features:
+            - The reactants and products are the same as the input target reaction, but with an additional property 'ID' added to each molecule.
+            - The value of the 'ID' property is determined by matching the molecular formula of each molecule in the target reaction with the corresponding molecule in the reference reaction, and then using the value from the reaction_ids string.
+            - The order and orientation of the reactants and products in the target reaction are preserved in the output target reaction.
+    """
     reactants_ids=reaction_ids.split('>>')[0].split('.')
     products_ids=reaction_ids.split('>>')[1].split('.')
     
@@ -114,17 +142,23 @@ def SetReactionIds(reference_reaction:AllChem.ChemicalReaction, target_reaction:
     return target_reaction
     
 
-def ReverseReaction(reaction:AllChem.ChemicalReaction) -> AllChem.ChemicalReaction:
-    '''
-    ReverseReaction(reaction)
+def ReverseReaction(reaction:AllChem.ChemicalReaction):
+    """
     Reverses a chemical reaction by swapping the reactants and products.
 
-    Parameters:
-        reaction (AllChem.ChemicalReaction): The input chemical reaction to be reversed.
+    Parameters
+    ----------
+    reaction : AllChem.ChemicalReaction
+        The input chemical reaction to be reversed.
 
-    Returns:
-        reversed_reaction (AllChem.ChemicalReaction): The output chemical reaction that is the reverse of the input reaction.
-    '''
+    Returns
+    -------
+    reversed_reaction : AllChem.ChemicalReaction
+        The output chemical reaction that is the reverse of the input reaction. The reversed reaction has the following features:
+            - The reactants are the same as the products of the input reaction, but in the opposite order.
+            - The products are the same as the reactants of the input reaction, but in the opposite order.
+            - The atom mapping, bond types and stereochemistry of the reaction are preserved in the reversed reaction.
+    """
     reversed_reaction = AllChem.ChemicalReaction()
     
     for i, p in enumerate(reaction.GetProducts()):
@@ -135,30 +169,24 @@ def ReverseReaction(reaction:AllChem.ChemicalReaction) -> AllChem.ChemicalReacti
     
     return reversed_reaction
 
-''' 
-###################  RULES TOOLKIT ###################
-'''
+
+
+
 
 def GenerateSingleReactantReactions(mapped_reaction:AllChem.ChemicalReaction) -> dict:
-    '''
+    """
     Generates a dictionary of single reactant reactions from a mapped reaction.
 
-    Parameters:
-        mapped_reaction (AllChem.ChemicalReaction): The input chemical reaction with atom mapping.
+    Parameters
+    ----------
+    mapped_reaction:AllChem.ChemicalReaction
+        The input chemical reaction with atom mapping.
 
-    Returns:
-        all_unique_reactions (dict): A dictionary of single reactant reactions, keyed by the reactant index and containing the reactant ID and the single reactant reaction object.
-
-    Helper function:
-        _sort_reaction(single_reactant_reaction)
-            Sorts the products of a single reactant reaction based on the number of mapped atoms they share with the reactant.
-
-            Parameters:
-                single_reactant_reaction (AllChem.ChemicalReaction): The input chemical reaction with one reactant and one or more products.
-
-            Returns:
-                sorted_reaction (AllChem.ChemicalReaction): The output chemical reaction with the same reactant and the products sorted in descending order of mapped atom overlap.
-    '''
+    Returns
+    -------
+    all_unique_reactions: dict
+        A dictionary of single reactant reactions, keyed by the reactant index and containing the reactant ID and the single reactant reaction object.
+    """
         
     def _sort_reaction(single_reactant_reaction:AllChem.ChemicalReaction) -> AllChem.ChemicalReaction:
 
@@ -191,48 +219,21 @@ def GenerateSingleReactantReactions(mapped_reaction:AllChem.ChemicalReaction) ->
 
     return all_unique_reactions
 
-def GenerateRules(single_reactant_reaction:AllChem.ChemicalReaction) -> dict:
-    '''
-    GenerateRules(single_reactant_reaction)
+def GenerateRules(single_reactant_reaction:AllChem.ChemicalReaction):
+    """
     Generates a dictionary of rules for a single reactant reaction based on the reacting atoms and the rings.
 
-    Parameters:
-        single_reactant_reaction (AllChem.ChemicalReaction): The input chemical reaction with one reactant and one or more products.
+    Parameters
+    ----------
+    single_reactant_reaction: AllChem.ChemicalReaction
+        The input chemical reaction with one reactant and one or more products.
 
-    Returns:
-        reaction_rules (dict): A dictionary of rules for the single reactant reaction, keyed by the reactant name and containing the reactant and product SMILES, the product name, and a sub-dictionary of rules keyed by the number of atoms to keep.
+    Returns
+    -------
+    reaction_rules: dict
+        A dictionary of rules for the single reactant reaction, keyed by the reactant name and containing the reactant and product SMILES, the product name, and a sub-dictionary of rules keyed by the number of atoms to keep.
 
-    Helper function:
-        _trim_reaction(single_reactant_reaction, atom_map_to_remove)
-            Trims a single reactant reaction by removing the atoms with the specified atom map numbers.
-
-            Parameters:
-                single_reactant_reaction (AllChem.ChemicalReaction): The input chemical reaction with one reactant and one or more products.
-                atom_map_to_remove (list): A list of atom map numbers to remove from the reaction.
-
-            Returns:
-                trimmed_reaction (str): The output chemical reaction in SMARTS format after trimming.
-
-            Helper function:
-                __adjust_mol_query(mol)
-                    Adjusts the query properties of a molecule to make it more generic.
-
-                    Parameters:
-                        mol (Chem.Mol): The input molecule to be adjusted.
-
-                    Returns:
-                        fixed_mol (Chem.Mol): The output molecule after adjusting the query properties.
-
-                __trim_mol(mol, atom_map_to_remove)
-                    Trims a molecule by removing the atoms with the specified atom map numbers.
-
-                    Parameters:
-                        mol (Chem.Mol): The input molecule to be trimmed.
-                        atom_map_to_remove (list): A list of atom map numbers to remove from the molecule.
-
-                    Returns:
-                        trimmed_mol (Chem.Mol): The output molecule after trimming.
-    '''
+    """
     single_reactant_reaction.Initialize()
     
     reactant = single_reactant_reaction.GetReactantTemplate(0)
@@ -311,45 +312,56 @@ def GenerateRules(single_reactant_reaction:AllChem.ChemicalReaction) -> dict:
 
     return reaction_rules
 
-'''
-###################  CLASSES  ###################
-'''
+
+
 
 class REACTION(object):
-    '''
+    """
     A class to represent a chemical reaction with various attributes and methods.
 
-    Attributes:
-        SanitizedReaction (AllChem.ChemicalReaction): The sanitized version of the input reaction, obtained by calling the SanitizeReaction function.
-        MappedReaction (AllChem.ChemicalReaction): The mapped version of the sanitized reaction, obtained by calling the MapReaction and SetReactionIds functions.
-        ReversedReaction (AllChem.ChemicalReaction or None): The reversed version of the mapped reaction, obtained by calling the ReverseReaction function, or None if the reversible argument is False.
+    Attributes
+    ----------
+    SanitizedReaction: AllChem.ChemicalReaction
+        The sanitized version of the input reaction, obtained by calling the SanitizeReaction function.
+    MappedReaction: AllChem.ChemicalReaction
+        The mapped version of the sanitized reaction, obtained by calling the MapReaction and SetReactionIds functions.
+    ReversedReaction: AllChem.ChemicalReaction or None
+        The reversed version of the mapped reaction, obtained by calling the ReverseReaction function, or None if the reversible argument is False.
 
-    Methods:
-        __init__(reaction_smiles, reaction_ids, reversible, mapper)
-            Initializes a REACTION object with the given arguments.
+    Methods
+    -------
+    __init__(reaction_smiles, reaction_ids, reversible, mapper)
+        Initializes a REACTION object with the given arguments.
 
-            Parameters:
-                reaction_smiles (str): The input chemical reaction in SMILES format.
-                reaction_ids (str): The IDs of the reactants and products of the input reaction, in the format of 'R1.R2.>>P1.P2.', where R1, R2, P1, P2 are the IDs.
-                reversible (bool): A flag to indicate whether to generate a reversed reaction or not. Default is False.
-                mapper (str): The name of the mapper to use for atom mapping. Either 'RXNMapper' or 'ReactionDecoder'. Default is 'ReactionDecoder'.
+        Parameters
+        -----------
+            reaction_smiles:str
+                The input chemical reaction in SMILES format.
+            reaction_ids:str
+                The IDs of the reactants and products of the input reaction, in the format of 'R1.R2.>>P1.P2.', where R1, R2, P1, P2 are the IDs.
+            reversible:bool
+                A flag to indicate whether to generate a reversed reaction or not. Default is False.
+            mapper:str
+                The name of the mapper to use for atom mapping. Either 'RXNMapper' or 'ReactionDecoder'. Default is 'ReactionDecoder'.
 
-    Example:
-        >>> from rdkit import Chem
-        >>> from rdkit.Chem import AllChem
-        >>> import dm # a module for molecular sanitization and standardization
-        >>> import rxn_mapper # a module for attention-guided atom mapping
-        >>> import subprocess # a module for calling external commands
-        >>> reaction_smiles = 'CC(=O)O.CCOC(=O)C>>CCOC(=O)CC.O'
-        >>> reaction_ids = 'R1.R2>>P1.P2'
-        >>> reaction = REACTION(reaction_smiles, reaction_ids, reversible=True, mapper='RXNMapper')
-        >>> print(reaction.SanitizedReaction)
-        [CH3:1][C:2](=[O:3])[OH:4].[CH3:5][CH2:6][O:7][C:8](=[O:9])[CH3:10]>><[CH3:1][CH2:6][O:7][C:8](=[O:9])[CH2:11][CH3:10].[OH:4][C:2](=[O:3])[H]
-        >>> print(reaction.MappedReaction)
-        [CH3:1][C:2](=[O:3])[OH:4].[CH3:5][CH2:6][O:7][C:8](=[O:9])[CH3:10]>><[CH3:1][CH2:6][O:7][C:8](=[O:9])[CH2:11][CH3:10].[OH:4][C:2](=[O:3])[H]
-        >>> print(reaction.ReversedReaction)
-        [CH3:1][CH2:6][O:7][C:8](=[O:9])[CH2:11][CH3:10].[OH:4][C:2](=[O:3])[H]>><[CH3:1][C:2](=[O:3])[OH:4].[CH3:5][CH2:6][O:7][C:8](=[O:9])[CH3:10]
-        '''
+    Example
+    -------
+    >>> from rdkit import Chem
+    >>> from rdkit.Chem import AllChem
+    >>> import dm # a module for molecular sanitization and standardization
+    >>> import rxn_mapper # a module for attention-guided atom mapping
+    >>> import subprocess # a module for calling external commands
+    >>> reaction_smiles = 'CC(=O)O.CCOC(=O)C>>CCOC(=O)CC.O'
+    >>> reaction_ids = 'R1.R2>>P1.P2'
+    >>> reaction = REACTION(reaction_smiles, reaction_ids, reversible=True, mapper='RXNMapper')
+    >>> print(reaction.SanitizedReaction)
+    [CH3:1][C:2](=[O:3])[OH:4].[CH3:5][CH2:6][O:7][C:8](=[O:9])[CH3:10]>><[CH3:1][CH2:6][O:7][C:8](=[O:9])[CH2:11][CH3:10].[OH:4][C:2](=[O:3])[H]
+    >>> print(reaction.MappedReaction)
+    [CH3:1][C:2](=[O:3])[OH:4].[CH3:5][CH2:6][O:7][C:8](=[O:9])[CH3:10]>><[CH3:1][CH2:6][O:7][C:8](=[O:9])[CH2:11][CH3:10].[OH:4][C:2](=[O:3])[H]
+    >>> print(reaction.ReversedReaction)
+    [CH3:1][CH2:6][O:7][C:8](=[O:9])[CH2:11][CH3:10].[OH:4][C:2](=[O:3])[H]>><[CH3:1][C:2](=[O:3])[OH:4].[CH3:5][CH2:6][O:7][C:8](=[O:9])[CH3:10]
+    """
+    
     def __init__(self, reaction_smiles:str, reaction_ids:str, reversible:bool = False, mapper:str = 'ReactionDecoder'):
         self.SanitizedReaction = SanitizeReaction(AllChem.ReactionFromSmarts(reaction_smiles,useSmiles=True))
         self.__mapped_reaction_raw = MapReaction(AllChem.ReactionToSmiles(self.SanitizedReaction),mapper=mapper)
@@ -361,36 +373,45 @@ class REACTION(object):
             self.ReversedReaction = None
 
 class PARSER(object):
-    '''
+    """
     A class to parse a chemical reaction from a string format into a dictionary format.
 
-    Attributes:
-        reaction (str): The input chemical reaction in a string format, using names or symbols of compounds and stoichiometry coefficients.
-        compounds_map (dict): A dictionary that maps the names or symbols of compounds to their SMILES strings.
-        reaction_dict (dict): The output chemical reaction in a dictionary format, containing the reversibility, the reactants and products with their stoichiometry and SMILES, and the reaction SMILES and names.
+    Attributes
+    ----------
+    reaction: str
+        The input chemical reaction in a string format, using names or symbols of compounds and stoichiometry coefficients.
+    compounds_map: dict
+        A dictionary that maps the names or symbols of compounds to their SMILES strings.
+    reaction_dict: dict
+        The output chemical reaction in a dictionary format, containing the reversibility, the reactants and products with their stoichiometry and SMILES, and the reaction SMILES and names.
 
-    Methods:
-        __init__(reaction, compounds_map)
-            Initializes a PARSER object with the given arguments.
+    Methods
+    -------
+    __init__(reaction, compounds_map)
+        Initializes a PARSER object with the given arguments.
 
-            Parameters:
-                reaction (str): The input chemical reaction in a string format, using names or symbols of compounds and stoichiometry coefficients.
-                compounds_map (dict): A dictionary that maps the names or symbols of compounds to their SMILES strings.
+        Parameters
+        ----------
+        reaction: str
+            The input chemical reaction in a string format, using names or symbols of compounds and stoichiometry coefficients.
+        compounds_map:dict
+            A dictionary that maps the names or symbols of compounds to their SMILES strings.
 
-        decompose_reaction()
-            Decomposes the input reaction into its components and stores them in the reaction_dict attribute.
+    decompose_reaction()
+        Decomposes the input reaction into its components and stores them in the reaction_dict attribute.
 
-            No parameters or returns.
+        No parameters or returns.
 
-    Example:
-        >>> import re # a module for regular expressions
-        >>> reaction = '2 H2 + O2 --> 2 H2O'
-        >>> compounds_map = {'H2': '[HH]', 'O2': 'O=O', 'H2O': 'O'}
-        >>> parser = PARSER(reaction, compounds_map)
-        >>> parser.decompose_reaction()
-        >>> print(parser.reaction_dict)
-        {'Reversible': False, 'LEFT': {'H2': {'stoichiometry': 2.0, 'smiles': '[HH]'}, 'O2': {'stoichiometry': 1.0, 'smiles': 'O=O'}}, 'RIGHT': {'H2O': {'stoichiometry': 2.0, 'smiles': 'O'}}, 'ReactionSmiles': '[HH].[HH].O=O>>O.O', 'ReactionNames': 'H2.H2.O2>>H2O.H2O'}
-    '''
+    Example
+    -------
+    >>> import re # a module for regular expressions
+    >>> reaction = '2 H2 + O2 --> 2 H2O'
+    >>> compounds_map = {'H2': '[HH]', 'O2': 'O=O', 'H2O': 'O'}
+    >>> parser = PARSER(reaction, compounds_map)
+    >>> parser.decompose_reaction()
+    >>> print(parser.reaction_dict)
+    {'Reversible': False, 'LEFT': {'H2': {'stoichiometry': 2.0, 'smiles': '[HH]'}, 'O2': {'stoichiometry': 1.0, 'smiles': 'O=O'}}, 'RIGHT': {'H2O': {'stoichiometry': 2.0, 'smiles': 'O'}}, 'ReactionSmiles': '[HH].[HH].O=O>>O.O', 'ReactionNames': 'H2.H2.O2>>H2O.H2O'}
+    """
     def __init__(self,reaction:str=None,compounds_map:dict=None):
         self.reaction=reaction
         self.compounds_map=compounds_map

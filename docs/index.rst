@@ -1,18 +1,25 @@
-.. MicrobeRX documentation master file, created by
-   sphinx-quickstart on Wed Aug 23 17:00:02 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 MicrobeRX's documentation
-=====================================
-
+==========================   
 .. toctree::
-   :maxdepth: 3
-   :caption: Tutorials:
+   :maxdepth: 2
+   :caption: GENERAL:
    
-   content/ReactionRules
-   content/PredictionMetabolites
+   tutorials/README
    
+.. toctree::
+   :maxdepth: 2
+   :caption: TUTORIALS:
+
+   tutorials/ReactionRules
+   tutorials/PredictionMetabolites
+   tutorials/OmicsIntegrator
+   
+.. toctree::
+   :maxdepth: 4
+   :caption: API DOCUMENTATION:
+
+   microberx
+
 Indices and tables
 ==================
 
