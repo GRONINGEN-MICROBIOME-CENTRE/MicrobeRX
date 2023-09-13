@@ -2,6 +2,9 @@
 Main class to predict metabolism of Xenobiotics
 ====================================================
 """
+__version__ = "0.1.4"
+
+__all__=['MetabolitePredictor','RunPredictionRule']
 
 import rdkit
 from rdkit import Chem
@@ -15,9 +18,6 @@ import datamol as dm
 from tqdm.notebook import tqdm
 rdkit.RDLogger.DisableLog("rdApp.*")
 
-__version__ = "0.1.4"
-
-__all__=['MetabolitePredictor','RunPredictionRule']
 
 class MetabolitePredictor:
     def __init__(self, rules_table:str):

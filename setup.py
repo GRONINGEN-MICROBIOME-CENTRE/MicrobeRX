@@ -21,7 +21,7 @@ setup(
     long_description_content_type="text/markdown",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['rdkit', 'datamol', 'pyopenms', 'PubChemPy','pandas', 'plotly', 'mols2grid', 'rxnmapper', 'distinctipy', 'numpy', 'matplotlib', 'tqdm'],
+    install_requires=['rdkit', 'datamol', 'pyopenms', 'PubChemPy','pandas', 'plotly', 'mols2grid', 'rxnmapper', 'distinctipy', 'numpy', 'matplotlib', 'tqdm','importlib_resources'],
     keywords=['python', 'metabolite', 'prediction', 'microbiome', 'cheminformatics', 'metabolism'],
     classifiers=[
         "Development Status :: 1 - Planning",

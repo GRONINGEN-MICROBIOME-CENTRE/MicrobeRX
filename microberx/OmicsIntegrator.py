@@ -3,19 +3,16 @@ Functionalities to analyze the enzymes and organisms involved in metabolism of X
 ====================================================
 """
 
+__all__=['plot_species_sunburst']
+
 import plotly.express as px
 from plotly.subplots import make_subplots
 from distinctipy import distinctipy
 
 import pandas as pd
 
-from package.MicrobeRX.DataFiles import load_microbes_data, load_microbes_reactions
+from .DataFiles import load_microbes_data, load_microbes_reactions
 
-
-__all__=['plot_species_sunburst']
-''' 
-################### TOOLKIT ###################
-'''
 
 def check_if_microbes_databases_are_loaded():
     '''

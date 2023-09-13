@@ -3,9 +3,8 @@ Rule Generator
 """
 __version__ = "0.2.0"
 
-__all__ = ["load_reaction_rules", "load_human_evidences", 
-           "load_microbes_evidences", "load_microbes_reactions", "load_microbes_data"]
-
+__all__ = ["SanitizeReaction", "MapReaction", 
+           "SetReactionIds", "ReverseReaction", "GenerateSingleReactantReactions","GenerateRules"]
 
 
 import copy, subprocess
@@ -22,7 +21,7 @@ import re
 
 from importlib_resources import files
 
-REACTION_DECODER = files("microberx.RuleGenerator.bin").joinpath("RTD.jar")
+REACTION_DECODER = files("microberx.bin").joinpath("RTD.jar")
 
 
 def SanitizeReaction (target_reaction:AllChem.ChemicalReaction):
