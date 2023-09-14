@@ -15,7 +15,7 @@ MicrobeRX's documentation
    tutorials/OmicsIntegrator
    
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
    :caption: API DOCUMENTATION:
 
    microberx
