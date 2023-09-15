@@ -1,15 +1,32 @@
 """
-Rule Generator
+This is a module that provides functions to manipulate chemical reactions and and generate reaction rules.
+
+The module contains the following functions:
+
+decompose_reaction: A fucntion to parse chemical reaction from a string format into a dictionary format.
+
+sanitize_reaction: Sanitizes a chemical reaction by removing stereochemistry, replacing dummy atoms with carbon, and standardizing the molecules.
+
+map_reaction: Maps the atoms of a chemical reaction using either RXNMapper or ReactionDecoder.
+
+set_reaction_ids: Sets the IDs of the reactants and products of a target reaction based on their molecular formulas and a reference reaction.
+
+reverse_reaction: Reverses a chemical reaction by swapping the reactants and products.
+
+generate_single_reactant_reactions: Generates a dictionary of single reactant reactions from a mapped reaction.
+
+generate_rules: Generates a dictionary of rules for a single reactant reaction based on the reacting atoms and the rings.
+
 """
-__version__ = "0.2.0"
+
 
 __all__ = [
-    "SanitizeReaction",
-    "MapReaction",
-    "SetReactionIds",
-    "ReverseReaction",
-    "GenerateSingleReactantReactions",
-    "GenerateRules",
+    "decompose_reaction",
+    "sanitize_reaction",
+    "sanitize_reaction",
+    "set_reaction_ids",
+    "reverse_reaction",
+    "generate_rules",
 ]
 
 
@@ -30,8 +47,112 @@ from importlib_resources import files
 
 REACTION_DECODER = files("microberx.bin").joinpath("RTD.jar")
 
+def decompose_reaction(reaction: str = None, compounds_map: dict = None):
+    """
+    Decompose a chemical reaction into its individual compounds and stoichiometry.
 
-def SanitizeReaction(target_reaction: AllChem.ChemicalReaction):
+    Parameters
+    ----------
+    reaction : str, optional
+        The chemical reaction in string format. It can be specified using various notations:
+        - "<=>" for reversible reactions.
+        - "-->" for irreversible reactions.
+        - "=" for generic reactions.
+
+    compounds_map : dict, optional
+        A dictionary mapping compound names to their corresponding SMILES representations.
+
+    Returns
+    -------
+    reaction_dict : dict
+        A dictionary containing the decomposed information of the chemical reaction, including:
+        - "Reaction": The original input chemical reaction.
+        - "Reversible": A boolean indicating whether the reaction is reversible.
+        - "LEFT": A dictionary of reactants with stoichiometry and SMILES.
+        - "RIGHT": A dictionary of products with stoichiometry and SMILES.
+        - "ReactionSmiles": The SMILES representation of the entire reaction.
+        - "ReactionNames": The names of compounds in the reaction.
+
+    Examples
+    --------
+    >>> compounds_map = {"H2O": "O", "CO2": "O=C=O", "CH4": "C"}
+    >>> reaction_str = "H2O + CO2 <=> CH4 + H2O"
+    >>> reaction_info = decompose_reaction(reaction_str, compounds_map)
+    >>> print(reaction_info)
+    >>> reaction_str = "H2O + CO2 --> CH4 + H2O"
+    >>> reaction_info = decompose_reaction(reaction_str, compounds_map)
+    >>> print(reaction_info)
+    """
+    
+    if " = " in reaction:
+        reaction = re.sub("@\w+", "", reaction)
+        reactants, products = reaction.split(" = ")
+        Reversible = True
+
+    if "<=>" in reaction:
+        reaction = re.sub(r"\[[a-z]\]", "", reaction)
+        reactants, products = reaction.split("<=>")
+        Reversible = True
+
+    if "-->" in reaction:
+        reaction = re.sub(r"\[[a-z]\]", "", reaction)
+        reactants, products = reaction.split("-->")
+        Reversible = False
+
+    # Split the reactants and products into individual compounds
+    reactants = reactants.split("+")
+    products = products.split("+")
+
+    # Create empty dictionaries to store the reactants and products with their stoichiometry
+    Left_side = {}
+    Right_side = {}
+    smiles_scheme = ""
+    names_scheme = ""
+
+    for r in reactants:
+        r = r.strip()
+        if len(r.split()) > 1:
+            stoich, name = r.split()
+        else:
+            name = r
+            stoich = 1
+
+        smiles = compounds_map[name]
+        Left_side[name] = {"stoichiometry": float(stoich), "smiles": smiles}
+        smiles_scheme += (smiles + ".") * int(float(stoich))
+        names_scheme += (name + ".") * int(float(stoich))
+
+    smiles_scheme = smiles_scheme[:-1]
+    names_scheme = names_scheme[:-1]
+
+    smiles_scheme += ">>"
+    names_scheme += ">>"
+    for p in products:
+        p = p.strip()
+        if len(p.split()) > 1:
+            stoich, name = p.split()
+        else:
+            name = p
+            stoich = 1
+
+        smiles = compounds_map[name]
+        Right_side[name] = {"stoichiometry": float(stoich), "smiles": smiles}
+        smiles_scheme += (smiles + ".") * int(float(stoich))
+        names_scheme += (name + ".") * int(float(stoich))
+
+    reaction_dict = {
+        "Reaction": reaction,
+        "Reversible": Reversible,
+        "LEFT": Left_side,
+        "RIGHT": Right_side,
+        "ReactionSmiles": smiles_scheme[:-1],
+        "ReactionNames": names_scheme[:-1],
+    }
+
+    return reaction_dict
+
+
+def sanitize_reaction(target_reaction: AllChem.ChemicalReaction):
     """
     Sanitizes a chemical reaction by removing stereochemistry, replacing dummy atoms with carbon, and standardizing the molecules.
 
@@ -48,11 +169,28 @@ def SanitizeReaction(target_reaction: AllChem.ChemicalReaction):
             - The dummy atoms (*) in the reactants and products are replaced with carbon atoms (#6), as they may represent unspecified groups or atoms.
             - The reactants and products are sanitized and standardized using the dm module, which performs operations such as kekulization, neutralization, tautomerization, etc.
             - The 2D coordinates of the reactants and products are computed using the AllChem.Compute2DCoords function, which may improve the visualization of the reaction.
+    Examples
+    --------
+    >>>reaction = AllChem.ReactionFromSmarts("[OH:1].[C:2]=O>>[C:2][OH:1]")
+    >>>fixed_reaction = sanitize_reaction(reaction)
+    >>>img = Draw.ReactionToImage(fixed_reaction)
+    >>>img.show()
     """
 
-    def _replace_dummy_atoms(
-        mol: Chem.Mol,
-    ):  ## Performs a molecular sanitization, removes stereochemistry and replaces dummy atoms
+    def _replace_dummy_atoms(mol: Chem.Mol):
+        """
+        Performs a molecular sanitization, removes stereochemistry, and replaces dummy atoms.
+
+        Parameters
+        ----------
+        mol : Chem.Mol
+            The input molecule to be sanitized.
+
+        Returns
+        -------
+        fixed_mol : Chem.Mol
+            The output molecule after sanitization.
+        """
         dummy_query = Chem.MolFromSmiles("*")
         fixed_mol = AllChem.ReplaceSubstructs(
             mol,
@@ -82,7 +220,7 @@ def SanitizeReaction(target_reaction: AllChem.ChemicalReaction):
     return fixed_reaction
 
 
-def MapReaction(reaction_smiles: str = None, mapper: str = "RXNMapper"):
+def map_reaction(reaction_smiles: str = None, mapper: str = "RXNMapper"):
     """
     Maps the atoms of a chemical reaction using either RXNMapper or ReactionDecoder.
 
@@ -105,23 +243,34 @@ def MapReaction(reaction_smiles: str = None, mapper: str = "RXNMapper"):
     """
 
     def _reaction_decoder(reaction_smiles: str):
+        """
+        Internal function to map a reaction using ReactionDecoder.
+
+        Parameters
+        ----------
+        reaction_smiles : str
+            The input chemical reaction in SMILES format.
+
+        Returns
+        -------
+        mapped_rxn : AllChem.ChemicalReaction
+            The mapped reaction using ReactionDecoder.
+        """
         out = subprocess.call(
-            [
-                "java",
-                "-jar",
-                REACTION_DECODER,
-                "-Q",
-                "SMI",
-                "-q",
-                reaction_smiles,
-                "-c",
-                "-j",
-                "AAM",
-                "-f",
-                "TEXT",
-            ],
-            timeout=360,
-        )
+            ["java",
+             "-jar",
+             REACTION_DECODER,
+             "-Q",
+             "SMI",
+             "-q",
+             reaction_smiles,
+             "-c",
+             "-j",
+             "AAM",
+             "-f",
+             "TEXT"],
+            timeout=360)
+        
         mapped_rxn = AllChem.ReactionFromRxnFile("ECBLAST_smiles_AAM.rxn")
         return mapped_rxn
 
@@ -138,11 +287,8 @@ def MapReaction(reaction_smiles: str = None, mapper: str = "RXNMapper"):
     return mapped_reaction
 
 
-def SetReactionIds(
-    reference_reaction: AllChem.ChemicalReaction,
-    target_reaction: AllChem.ChemicalReaction,
-    reaction_ids: str,
-):
+def set_reaction_ids(reference_reaction: AllChem.ChemicalReaction,target_reaction: AllChem.ChemicalReaction,reaction_ids: str):
+    
     """
     Sets the IDs of the reactants and products of a target reaction based on their molecular formulas and a reference reaction.
 
@@ -162,7 +308,17 @@ def SetReactionIds(
             - The reactants and products are the same as the input target reaction, but with an additional property 'ID' added to each molecule.
             - The value of the 'ID' property is determined by matching the molecular formula of each molecule in the target reaction with the corresponding molecule in the reference reaction, and then using the value from the reaction_ids string.
             - The order and orientation of the reactants and products in the target reaction are preserved in the output target reaction.
+
+    Examples
+    --------
+    >>> reference_reaction = Chem.ReactionFromSmarts("[H][C:1]([H])=[O:2]>>[O:2]=[C:1]([H])")
+    >>> target_reaction = Chem.ReactionFromSmarts("[O:2]=[C:1]([H])>>[H][C:1]([H])=[O:2]")
+    >>> reaction_ids = "R1.R2.>>P1.P2."
+    >>> target_reaction_with_ids = set_reaction_ids(reference_reaction, target_reaction, reaction_ids)
+    >>> print(target_reaction_with_ids.GetReactants()[0].GetProp("ID"))
+    >>> print(target_reaction_with_ids.GetProducts()[0].GetProp("ID"))
     """
+    
     reactants_ids = reaction_ids.split(">>")[0].split(".")
     products_ids = reaction_ids.split(">>")[1].split(".")
 
@@ -185,7 +341,7 @@ def SetReactionIds(
     return target_reaction
 
 
-def ReverseReaction(reaction: AllChem.ChemicalReaction):
+def reverse_reaction(reaction: AllChem.ChemicalReaction):
     """
     Reverses a chemical reaction by swapping the reactants and products.
 
@@ -200,8 +356,15 @@ def ReverseReaction(reaction: AllChem.ChemicalReaction):
         The output chemical reaction that is the reverse of the input reaction. The reversed reaction has the following features:
             - The reactants are the same as the products of the input reaction, but in the opposite order.
             - The products are the same as the reactants of the input reaction, but in the opposite order.
-            - The atom mapping, bond types and stereochemistry of the reaction are preserved in the reversed reaction.
+            - The atom mapping, bond types, and stereochemistry of the reaction are preserved in the reversed reaction.
+
+    Examples
+    --------
+    >>> reaction = Chem.ReactionFromSmarts("[H][C:1]([H])=[O:2]>>[O:2]=[C:1]([H])")
+    >>> reversed_reaction = reverse_reaction(reaction)
+    >>> print(Chem.MolToSmarts(reversed_reaction))
     """
+
     reversed_reaction = AllChem.ChemicalReaction()
 
     for i, p in enumerate(reaction.GetProducts()):
@@ -213,7 +376,7 @@ def ReverseReaction(reaction: AllChem.ChemicalReaction):
     return reversed_reaction
 
 
-def GenerateSingleReactantReactions(mapped_reaction: AllChem.ChemicalReaction) -> dict:
+def generate_single_reactant_reactions(mapped_reaction: AllChem.ChemicalReaction):
     """
     Generates a dictionary of single reactant reactions from a mapped reaction.
 
@@ -226,6 +389,13 @@ def GenerateSingleReactantReactions(mapped_reaction: AllChem.ChemicalReaction) -
     -------
     all_unique_reactions: dict
         A dictionary of single reactant reactions, keyed by the reactant index and containing the reactant ID and the single reactant reaction object.
+    
+    Examples
+    --------
+    >>> mapped_reaction = Chem.ReactionFromSmarts("[H][C:1]([H])=[O:2]>>[O:2]=[C:1]([H])")
+    >>> single_reactant_reactions = generate_single_reactant_reactions(mapped_reaction)
+    >>> print(single_reactant_reactions["reactantIdx_1"]["ID"])
+    >>> print(Chem.MolToSmarts(single_reactant_reactions["reactantIdx_1"]["SingleReactantReaction"]))
     """
 
     def _sort_reaction(
@@ -278,7 +448,7 @@ def GenerateSingleReactantReactions(mapped_reaction: AllChem.ChemicalReaction) -
     return all_unique_reactions
 
 
-def GenerateRules(single_reactant_reaction: AllChem.ChemicalReaction):
+def generate_rules(single_reactant_reaction: AllChem.ChemicalReaction):
     """
     Generates a dictionary of rules for a single reactant reaction based on the reacting atoms and the rings.
 
@@ -292,6 +462,15 @@ def GenerateRules(single_reactant_reaction: AllChem.ChemicalReaction):
     reaction_rules: dict
         A dictionary of rules for the single reactant reaction, keyed by the reactant name and containing the reactant and product SMILES, the product name, and a sub-dictionary of rules keyed by the number of atoms to keep.
 
+    Examples
+    --------
+    >>> reaction_smiles = "[H][C:1]([H])=[O:2]>>[O:2]=[C:1]([H])"
+    >>> reaction = Chem.ReactionFromSmarts(reaction_smiles)
+    >>> rules = generate_rules(reaction)
+    >>> print(rules["reactant_1"]["ReactantMap"])
+    >>> print(rules["reactant_1"]["ProductName"])
+    >>> print(rules["reactant_1"]["ProductMap"])
+    >>> print(rules["reactant_1"]["SingleReactantRules"][3])  # Rules for reactions with 3 atoms to keep
     """
     single_reactant_reaction.Initialize()
 
@@ -311,9 +490,22 @@ def GenerateRules(single_reactant_reaction: AllChem.ChemicalReaction):
     rules = {}
     reaction_rules = {}
 
-    def _trim_reaction(
-        single_reactant_reaction: AllChem.ChemicalReaction, atom_map_to_remove
-    ) -> AllChem.ChemicalReaction:
+    def _trim_reaction(single_reactant_reaction: AllChem.ChemicalReaction, atom_map_to_remove):
+        """
+        Trims a chemical reaction by removing specific atoms based on atom mapping.
+
+        Parameters
+        ----------
+        single_reactant_reaction: AllChem.ChemicalReaction
+            The input chemical reaction with one reactant and one or more products.
+        atom_map_to_remove: list
+            A list of atom map numbers corresponding to the atoms to be removed from the reaction.
+
+        Returns
+        -------
+        trimmed_reaction: AllChem.ChemicalReaction
+            The trimmed chemical reaction after removing the specified atoms.
+        """
         single_reactant_reaction.Initialize()
         trimmed_reaction = AllChem.ChemicalReaction()
 
@@ -402,7 +594,7 @@ def GenerateRules(single_reactant_reaction: AllChem.ChemicalReaction):
     return reaction_rules
 
 
-class REACTION(object):
+class Reaction(object):
     """
     A class to represent a chemical reaction with various attributes and methods.
 
@@ -433,11 +625,6 @@ class REACTION(object):
 
     Example
     -------
-    >>> from rdkit import Chem
-    >>> from rdkit.Chem import AllChem
-    >>> import dm # a module for molecular sanitization and standardization
-    >>> import rxn_mapper # a module for attention-guided atom mapping
-    >>> import subprocess # a module for calling external commands
     >>> reaction_smiles = 'CC(=O)O.CCOC(=O)C>>CCOC(=O)CC.O'
     >>> reaction_ids = 'R1.R2>>P1.P2'
     >>> reaction = REACTION(reaction_smiles, reaction_ids, reversible=True, mapper='RXNMapper')
@@ -456,128 +643,17 @@ class REACTION(object):
         reversible: bool = False,
         mapper: str = "ReactionDecoder",
     ):
-        self.SanitizedReaction = SanitizeReaction(
+        self.SanitizedReaction = sanitize_reaction(
             AllChem.ReactionFromSmarts(reaction_smiles, useSmiles=True)
         )
-        self.__mapped_reaction_raw = MapReaction(
+        self.__mapped_reaction_raw = map_reaction(
             AllChem.ReactionToSmiles(self.SanitizedReaction), mapper=mapper
         )
-        self.__mapped_reaction_sanitized = SanitizeReaction(self.__mapped_reaction_raw)
-        self.MappedReaction = SetReactionIds(
+        self.__mapped_reaction_sanitized = sanitize_reaction(self.__mapped_reaction_raw)
+        self.MappedReaction = set_reaction_ids(
             self.SanitizedReaction, self.__mapped_reaction_sanitized, reaction_ids
         )
         if reversible == True:
-            self.ReversedReaction = ReverseReaction(self.MappedReaction)
+            self.ReversedReaction = reverse_reaction(self.MappedReaction)
         if reversible == False:
             self.ReversedReaction = None
-
-
-class PARSER(object):
-    """
-    A class to parse a chemical reaction from a string format into a dictionary format.
-
-    Attributes
-    ----------
-    reaction: str
-        The input chemical reaction in a string format, using names or symbols of compounds and stoichiometry coefficients.
-    compounds_map: dict
-        A dictionary that maps the names or symbols of compounds to their SMILES strings.
-    reaction_dict: dict
-        The output chemical reaction in a dictionary format, containing the reversibility, the reactants and products with their stoichiometry and SMILES, and the reaction SMILES and names.
-
-    Methods
-    -------
-    __init__(reaction, compounds_map)
-        Initializes a PARSER object with the given arguments.
-
-        Parameters
-        ----------
-        reaction: str
-            The input chemical reaction in a string format, using names or symbols of compounds and stoichiometry coefficients.
-        compounds_map:dict
-            A dictionary that maps the names or symbols of compounds to their SMILES strings.
-
-    decompose_reaction()
-        Decomposes the input reaction into its components and stores them in the reaction_dict attribute.
-
-        No parameters or returns.
-
-    Example
-    -------
-    >>> import re # a module for regular expressions
-    >>> reaction = '2 H2 + O2 --> 2 H2O'
-    >>> compounds_map = {'H2': '[HH]', 'O2': 'O=O', 'H2O': 'O'}
-    >>> parser = PARSER(reaction, compounds_map)
-    >>> parser.decompose_reaction()
-    >>> print(parser.reaction_dict)
-    {'Reversible': False, 'LEFT': {'H2': {'stoichiometry': 2.0, 'smiles': '[HH]'}, 'O2': {'stoichiometry': 1.0, 'smiles': 'O=O'}}, 'RIGHT': {'H2O': {'stoichiometry': 2.0, 'smiles': 'O'}}, 'ReactionSmiles': '[HH].[HH].O=O>>O.O', 'ReactionNames': 'H2.H2.O2>>H2O.H2O'}
-    """
-
-    def __init__(self, reaction: str = None, compounds_map: dict = None):
-        self.reaction = reaction
-        self.compounds_map = compounds_map
-
-    def decompose_reaction(self):
-        if " = " in self.reaction:
-            self.reaction = re.sub("@\w+", "", self.reaction)
-            reactants, products = self.reaction.split(" = ")
-            Reversible = True
-
-        if "<=>" in self.reaction:
-            self.reaction = re.sub(r"\[[a-z]\]", "", self.reaction)
-            reactants, products = self.reaction.split("<=>")
-            Reversible = True
-
-        if "-->" in self.reaction:
-            self.reaction = re.sub(r"\[[a-z]\]", "", self.reaction)
-            reactants, products = self.reaction.split("-->")
-            Reversible = False
-
-        # Split the reactants and products into individual compounds
-        reactants = reactants.split("+")
-        products = products.split("+")
-
-        # Create empty dictionaries to store the reactants and products with their stoichiometry
-        Left_side = {}
-        Right_side = {}
-        smiles_scheme = ""
-        names_scheme = ""
-
-        for r in reactants:
-            r = r.strip()
-            if len(r.split()) > 1:
-                stoich, name = r.split()
-            else:
-                name = r
-                stoich = 1
-
-            smiles = self.compounds_map[name]
-            Left_side[name] = {"stoichiometry": float(stoich), "smiles": smiles}
-            smiles_scheme += (smiles + ".") * int(float(stoich))
-            names_scheme += (name + ".") * int(float(stoich))
-
-        smiles_scheme = smiles_scheme[:-1]
-        names_scheme = names_scheme[:-1]
-
-        smiles_scheme += ">>"
-        names_scheme += ">>"
-        for p in products:
-            p = p.strip()
-            if len(p.split()) > 1:
-                stoich, name = p.split()
-            else:
-                name = p
-                stoich = 1
-
-            smiles = self.compounds_map[name]
-            Right_side[name] = {"stoichiometry": float(stoich), "smiles": smiles}
-            smiles_scheme += (smiles + ".") * int(float(stoich))
-            names_scheme += (name + ".") * int(float(stoich))
-
-        self.reaction_dict = {
-            "Reversible": Reversible,
-            "LEFT": Left_side,
-            "RIGHT": Right_side,
-            "ReactionSmiles": smiles_scheme[:-1],
-            "ReactionNames": names_scheme[:-1],
-        }

@@ -9,8 +9,6 @@ search_pubchem: Searches the PubChem database for compounds that match a given d
 classify_molecules: Classify molecules based on their SMILES strings using the ClassyFire web service.
 """
 
-__version__ = "0.1.4"
-
 __all__ = [
     "compute_molecular_descriptors",
     "compute_isotopic_mass",
