@@ -22,3 +22,5 @@ from .MetaboliteAnalyzer import *
 from .MetaboliteVisualizer import *
 
 print("MicrobeRX tools imported successfully")
+from . import _version
+__version__ = _version.get_versions()['version']
