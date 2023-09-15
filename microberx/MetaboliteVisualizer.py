@@ -1,8 +1,21 @@
 """
-Metabolite visualizator
-"""
+This is a module that provides functions to visualize predicted metabolites from MicrobeRX.
 
-__version__ = "0.1.4"
+The module contains the following functions:
+
+- plot_molecular_descriptors: Generated and interactive of the molecular descriptors of a given data frame using polar coordinates.
+
+- plot_isotopic_masses: Generated and interactive plot of the isotopic mass distribution of a given data frame using plotly.
+
+- plot_confidence_scores: Creates a 3D scatter plot of the data frame with the x, y, and z axes representing the similarity of substrates, products, and reacting atoms efficiency respectively.
+
+- plot_metabolic_accesibility: Creates a 2D image of a molecule with the atoms colored according to their metabolic accessibility.
+
+- plot_relationships: Creates a Sankey diagram to visualize the evidences of metabolite annotations in a data frame.
+
+- display_molecules: Displays a grid of molecules from a data frame, using different colors to indicate the values of a specified column.
+
+"""
 
 __all__ = [
     "plot_molecular_descriptors",
@@ -37,7 +50,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-def plot_molecular_descriptors(data_frame: pd.DataFrame, names_col: str) -> go.Figure:
+def plot_molecular_descriptors(data_frame: pd.DataFrame, names_col: str):
     """
     Plots the molecular descriptors of a given data frame using polar coordinates.
 
@@ -124,9 +137,7 @@ def plot_molecular_descriptors(data_frame: pd.DataFrame, names_col: str) -> go.F
     return Figure
 
 
-def plot_isotopic_masses(
-    data_frame: pd.DataFrame, names_col: str, mass_distribution_col: str
-) -> go.Figure:
+def plot_isotopic_masses(data_frame: pd.DataFrame, names_col: str, mass_distribution_col: str):
     """
     Plots the isotopic mass distribution of a given data frame using plotly.
 
@@ -193,13 +204,7 @@ def plot_isotopic_masses(
     return Figure
 
 
-def plot_confidence_scores(
-    data_frame: pd.DataFrame,
-    x: str = "similarity_substrates",
-    y: str = "similarity_products",
-    z: str = "reacting_atoms_efficiency",
-    cmap: str = "RdYlGn",
-):
+def plot_confidence_scores(data_frame: pd.DataFrame,x: str = "similarity_substrates",y: str = "similarity_products",z: str = "reacting_atoms_efficiency",cmap: str = "RdYlGn"):
     """
     Creates a 3D scatter plot of the data frame with the x, y, and z axes representing the similarity of substrates, products, and reacting atoms efficiency respectively.
 
@@ -297,14 +302,7 @@ def plot_confidence_scores(
     return fig
 
 
-def plot_metabolic_accesibility(
-    data_frame: pd.DataFrame,
-    molecule: Chem.Mol,
-    atom_map_col: str = "reacting_atoms_in_query",
-    mol_name: str = "Query",
-    alpha: float = 0.5,
-    cmap: str = "RdYlGn_r",
-):
+def plot_metabolic_accesibility(data_frame: pd.DataFrame,molecule: Chem.Mol,atom_map_col: str = "reacting_atoms_in_query",mol_name: str = "Query",alpha: float = 0.5,cmap: str = "RdYlGn_r"):
     """
     Creates a 2D image of a molecule with the atoms colored according to their metabolic accessibility.
 
@@ -385,14 +383,7 @@ def plot_metabolic_accesibility(
     return fig
 
 
-def display_molecules(
-    data_frame: pd.DataFrame,
-    legends_col: str = "metabolite_id",
-    smiles_col: str = "main_product_smiles",
-    scale_from_column: str = "confidence_score",
-    columns_to_display: list = ["reaction_id"],
-    cmap: str = "RdYlGn",
-):
+def display_molecules(data_frame: pd.DataFrame,legends_col: str = "metabolite_id",smiles_col: str = "main_product_smiles",scale_from_column: str = "confidence_score",columns_to_display: list = ["reaction_id"],cmap: str = "RdYlGn"):
     """
     Displays a grid of molecules from a data frame, using different colors to indicate the values of a specified column.
 
@@ -482,9 +473,7 @@ def display_molecules(
     return view
 
 
-def plot_relationships(
-    data_frame: pd.DataFrame, nodes: list = ["reaction_id", "metabolite_id"]
-) -> go.Figure:
+def plot_relationships(data_frame: pd.DataFrame, nodes: list = ["reaction_id", "metabolite_id"]):
     """
     Creates a Sankey diagram to visualize the evidences of metabolite annotations in a data frame.
 

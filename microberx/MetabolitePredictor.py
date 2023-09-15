@@ -1,8 +1,12 @@
 """
-Main class to predict metabolism of Xenobiotics
-====================================================
+This is a module that provides the main classes to predicted metabolites using MicrobeRX.
+
+The module contains the following classes:
+
+- MetabolitePredictor:  A class for predicting metabolites using reaction rules.
+
+- RunPredictionRule: A class for predicting metabolites based on a single reaction rule.
 """
-__version__ = "0.1.4"
 
 __all__ = ["MetabolitePredictor", "RunPredictionRule"]
 
@@ -21,10 +25,68 @@ rdkit.RDLogger.DisableLog("rdApp.*")
 
 
 class MetabolitePredictor:
-    def __init__(self, rules_table: str):
+    """
+    A class for predicting metabolites using reaction rules.
+
+    Parameters
+    ----------
+    rules_table : str
+        The path to a table containing reaction rules and associated information.
+
+    Attributes
+    ----------
+    predicted_metabolites : pd.DataFrame
+        A DataFrame to store predicted metabolites and associated information.
+    query : Chem.Mol
+        The query molecule for metabolite prediction.
+    query_name : str
+        The name associated with the query molecule.
+    query_atoms_num : int
+        The number of heavy atoms in the query molecule.
+    reacting_atoms : list
+        A list to store reacting atom indices.
+    reacting_atoms_in_unique_metabolites : list
+        A list to store reacting atom indices in unique metabolites.
+
+    Methods
+    -------
+    run_prediction(query: Chem.Mol, name: str = "metabolite")
+        Run the metabolite prediction using the provided query molecule and name.
+    """
+    
+    def __init__(self, rules_table: pd.DataFrame):
+        """
+        Initialize a MetabolitePredictor instance.
+
+        Parameters
+        ----------
+        rules_table : pd.DataFrame
+            The path to a table containing reaction rules and associated information.
+        """
         self.rules_table = rules_table
 
     def run_prediction(self, query: Chem.Mol, name: str = "metabolite"):
+        """
+        This method performs metabolite prediction using reaction rules from the rules table. It calculates confidence scores for predicted metabolites and stores the results in the 'predicted_metabolites' attribute.
+
+        Parameters
+        ----------
+        query : Chem.Mol
+            The query molecule for metabolite prediction.
+        name : str, optional
+            The name associated with the query molecule. Default is "metabolite".
+
+        Returns
+        -------
+        None
+        
+        Example
+        -------
+        >>> predictor = MetabolitePredictor(rules_table)
+        >>> query_molecule = Chem.MolFromSmiles("CC(=O)O")
+        >>> predictor.run_prediction(query_molecule, "acetate")
+        >>> predicted_metabolites_df = predictor.predicted_metabolites
+        """
         self.predicted_metabolites = pd.DataFrame()
         self.query = query
         self.query_name = name
@@ -92,9 +154,56 @@ class MetabolitePredictor:
 
 
 class RunPredictionRule:
-    def __init__(
-        self, query: Chem.Mol, rule_smarts: str, real_product: str, real_substrate: str
-    ):
+    """
+    A class for predicting reactions based on reaction rules.
+
+    Parameters
+    ----------
+    query : Chem.Mol
+        The query molecule for prediction.
+    rule_smarts : str
+        The reaction rule in SMARTS format.
+    real_product : str
+        The SMILES representation of the real product.
+    real_substrate : str
+        The SMILES representation of the real substrate.
+
+    Attributes
+    ----------
+    query : Chem.Mol
+        The query molecule for prediction.
+    rule_smarts : str
+        The reaction rule in SMARTS format.
+    reaction : AllChem.Reaction
+        The reaction object created from the reaction rule.
+    real_product : Chem.Mol
+        The real product molecule.
+    real_substrate : Chem.Mol
+        The real substrate molecule.
+    unique_products : dict
+        A dictionary to store information about unique predicted products.
+
+    Methods
+    -------
+    predict()
+        Predict reaction products and populate the 'unique_products' attribute.
+
+    """
+    def __init__(self, query: Chem.Mol, rule_smarts: str, real_product: str, real_substrate: str):
+        """
+        Initialize a RunPredictionRule instance.
+
+        Parameters
+        ----------
+        query : Chem.Mol
+            The query molecule for prediction.
+        rule_smarts : str
+            The reaction rule in SMARTS format.
+        real_product : str
+            The SMILES representation of the real product.
+        real_substrate : str
+            The SMILES representation of the real substrate.
+        """
         self.query = query
         self.rule_smarts = rule_smarts
         self.reaction = AllChem.ReactionFromSmarts(self.rule_smarts, useSmiles=False)
@@ -103,6 +212,13 @@ class RunPredictionRule:
         self.real_substrate = Chem.MolFromSmiles(real_substrate)
 
     def predict(self):
+        """
+        This method predicts reaction products based on the provided query molecule, reaction rule, real product, and real substrate. It calculates various properties and stores the results in the 'unique_products' dictionary.
+
+        Returns
+        -------
+        None
+        """
         self._main_reactant = self.reaction.GetReactantTemplate(0)
         num_substructure_matches = len(
             self.query.GetSubstructMatches(self._main_reactant)

@@ -3,17 +3,17 @@ This module contains functions to compute and analyze molecular properties and d
 
 The module has the following functions:
 
-compute_molecular_descriptors: Computes some molecular descriptors for a given data frame of SMILES strings.
-compute_isotopic_mass: Computes the isotopic mass distribution of a given data frame using the pyOpenMS library.
-search_pubchem: Searches the PubChem database for compounds that match a given data frame of identifiers.
-classify_molecules: Classify molecules based on their SMILES strings using the ClassyFire web service.
+- compute_molecular_descriptors: Computes some molecular descriptors for a given data frame of SMILES strings.
+- compute_isotopic_mass: Computes the isotopic mass distribution of a given data frame using the pyOpenMS library.
+- search_pubchem: Searches the PubChem database for compounds that match a given data frame of identifiers.
+- classify_molecules: Classify molecules based on their SMILES strings using the ClassyFire web service.
 """
 
 __all__ = [
     "compute_molecular_descriptors",
     "compute_isotopic_mass",
     "search_pubchem",
-    "classify_molecules",
+    "classify_molecules"
 ]
 
 
@@ -33,9 +33,7 @@ from rdkit.Chem import AllChem, Descriptors
 from tqdm.notebook import tqdm
 
 
-def compute_molecular_descriptors(
-    data_frame: pd.DataFrame, smiles_col: str
-) -> pd.DataFrame:
+def compute_molecular_descriptors(data_frame: pd.DataFrame, smiles_col: str):
     """
     Computes some molecular descriptors for a given data frame of SMILES strings.
 
@@ -75,9 +73,7 @@ def compute_molecular_descriptors(
     return data_frame
 
 
-def compute_isotopic_mass(
-    data_frame: pd.DataFrame, molformula_col: str
-) -> pd.DataFrame:
+def compute_isotopic_mass(data_frame: pd.DataFrame, molformula_col: str):
     """
     Computes the isotopic mass distribution of a given data frame using the pyOpenMS library.
 
@@ -126,9 +122,7 @@ def compute_isotopic_mass(
     return data_frame
 
 
-def search_pubchem(
-    data_frame: pd.DataFrame, entry_col: str, entry_type: str = "smiles"
-) -> pd.DataFrame:
+def search_pubchem(data_frame: pd.DataFrame, entry_col: str, entry_type: str = "smiles"):
     """
     Searches the PubChem database for compounds that match a given data frame of identifiers.
 
@@ -199,13 +193,7 @@ def classify_molecules(data_frame: pd.DataFrame, smiles_col: str, names_col: str
 
     URL = "http://classyfire.wishartlab.com"
 
-    def _submit_query(
-        data_frame: pd.DataFrame,
-        smiles_col: str,
-        names_col: str,
-        label: str = "Metabolites",
-        query_type="STRUCTURE",
-    ):
+    def _submit_query(data_frame: pd.DataFrame,smiles_col: str,names_col: str,label: str = "Metabolites",query_type="STRUCTURE"):
         unique_mols = data_frame.drop_duplicates(subset=[names_col, smiles_col])
 
         entries = [

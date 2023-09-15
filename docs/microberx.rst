@@ -1,3 +1,11 @@
+microberx.RuleGenerator
+-----------------------
+
+.. automodule:: microberx.RuleGenerator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 microberx.DataFiles
 -------------------
 
@@ -5,6 +13,15 @@ microberx.DataFiles
    :members:
    :undoc-members:
    :show-inheritance:
+   
+microberx.MetabolitePredictor
+-----------------------------
+
+.. automodule:: microberx.MetabolitePredictor
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 microberx.MetaboliteAnalyzer
 ----------------------------
@@ -14,13 +31,6 @@ microberx.MetaboliteAnalyzer
    :undoc-members:
    :show-inheritance:
 
-microberx.MetabolitePredictor
------------------------------
-
-.. automodule:: microberx.MetabolitePredictor
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 microberx.MetaboliteVisualizer
 ------------------------------
@@ -38,10 +48,4 @@ microberx.OmicsIntegrator
    :undoc-members:
    :show-inheritance:
 
-microberx.RuleGenerator
------------------------
 
-.. automodule:: microberx.RuleGenerator
-   :members:
-   :undoc-members:
-   :show-inheritance:
