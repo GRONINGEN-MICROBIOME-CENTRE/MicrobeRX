@@ -1,6 +1,5 @@
 """
 Functionalities to analyze the enzymes and organisms involved in metabolism of Xenobiotics
-====================================================
 """
 
 __all__=['plot_species_sunburst']
@@ -15,13 +14,13 @@ from .DataFiles import load_microbes_data, load_microbes_reactions
 
 
 def check_if_microbes_databases_are_loaded():
-    '''
+    """
     The function check_if_microbes_databases_are_loaded checks if the global variables MICROBES_DATA and MICROBES_REACTIONS are loaded with the data from the microbes databases. If not, it calls the functions load_microbes_data and load_microbes_reactions to load the data and assign it to the global variables.
 
     Parameters: None
 
     Returns: None
-    '''
+    """
     
     global MICROBES_DATA
     MICROBES_DATA=None
