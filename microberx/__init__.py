@@ -7,9 +7,10 @@ The tool allows you to:
 - Visualize and explore the results using interactive plots and tables
 """
 
-__version__ = "0.2.0"
+# Handle versioneer
+from ._version import get_versions
 
-__all__ = ["DataFiles","RuleGenerator", "MetabolitePredictor","MetaboliteAnalyzer", "MetaboliteVisualizer"]
+# Add imports here
 
 from .RuleGenerator import *
 
@@ -21,6 +22,10 @@ from .MetaboliteAnalyzer import *
 
 from .MetaboliteVisualizer import *
 
-print("MicrobeRX tools imported successfully")
-from . import _version
-__version__ = _version.get_versions()['version']
+__version__ = get_versions()["version"]
+
+del get_versions
+
+__documentation_web__ = "https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX"
+__github_web__ = "https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX"
+__github_issues_web__ = __github_web__ + "/issues"

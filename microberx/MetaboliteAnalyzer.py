@@ -11,8 +11,13 @@ classify_molecules: Classify molecules based on their SMILES strings using the C
 
 __version__ = "0.1.4"
 
-__all__ = ["compute_molecular_descriptors", "compute_isotopic_mass", "search_pubchem","classify_molecules"]
-          
+__all__ = [
+    "compute_molecular_descriptors",
+    "compute_isotopic_mass",
+    "search_pubchem",
+    "classify_molecules",
+]
+
 
 import requests, copy, random
 import pandas as pd
@@ -30,7 +35,9 @@ from rdkit.Chem import AllChem, Descriptors
 from tqdm.notebook import tqdm
 
 
-def compute_molecular_descriptors(data_frame: pd.DataFrame, smiles_col:str) -> pd.DataFrame:
+def compute_molecular_descriptors(
+    data_frame: pd.DataFrame, smiles_col: str
+) -> pd.DataFrame:
     """
     Computes some molecular descriptors for a given data frame of SMILES strings.
 
@@ -51,23 +58,28 @@ def compute_molecular_descriptors(data_frame: pd.DataFrame, smiles_col:str) -> p
             - NumHDonors: the number of hydrogen bond donors in the molecule
             - NumRotatableBonds: the number of rotatable bonds in the molecule
             - TPSA: the topological polar surface area of the molecule
-            - MolFormula: the molecular formula of the molecule 
+            - MolFormula: the molecular formula of the molecule
     """
-    data_frame=copy.deepcopy(data_frame)
-    for index in (data_frame.index):
-        mol=Chem.MolFromSmiles(data_frame[smiles_col][index])
+    data_frame = copy.deepcopy(data_frame)
+    for index in data_frame.index:
+        mol = Chem.MolFromSmiles(data_frame[smiles_col][index])
         if mol:
-            data_frame.loc[index,'MolWt']= round(Descriptors.MolWt(mol),3) 
-            data_frame.loc[index,'LogP']= round(Descriptors.MolLogP(mol),3) 
-            data_frame.loc[index,'NumHAcceptors']= Descriptors.NumHAcceptors(mol) 
-            data_frame.loc[index,'NumHDonors']= Descriptors.NumHDonors(mol) 
-            data_frame.loc[index,'NumRotatableBonds']= Descriptors.NumRotatableBonds(mol)
-            data_frame.loc[index,'TPSA']= Descriptors.TPSA(mol) 
-            data_frame.loc[index,'MolFormula']= AllChem.CalcMolFormula(mol)
-    
+            data_frame.loc[index, "MolWt"] = round(Descriptors.MolWt(mol), 3)
+            data_frame.loc[index, "LogP"] = round(Descriptors.MolLogP(mol), 3)
+            data_frame.loc[index, "NumHAcceptors"] = Descriptors.NumHAcceptors(mol)
+            data_frame.loc[index, "NumHDonors"] = Descriptors.NumHDonors(mol)
+            data_frame.loc[index, "NumRotatableBonds"] = Descriptors.NumRotatableBonds(
+                mol
+            )
+            data_frame.loc[index, "TPSA"] = Descriptors.TPSA(mol)
+            data_frame.loc[index, "MolFormula"] = AllChem.CalcMolFormula(mol)
+
     return data_frame
 
-def compute_isotopic_mass(data_frame:pd.DataFrame, molformula_col:str) -> pd.DataFrame:
+
+def compute_isotopic_mass(
+    data_frame: pd.DataFrame, molformula_col: str
+) -> pd.DataFrame:
     """
     Computes the isotopic mass distribution of a given data frame using the pyOpenMS library.
 
@@ -95,22 +107,30 @@ def compute_isotopic_mass(data_frame:pd.DataFrame, molformula_col:str) -> pd.Dat
     1   C2H4O2            1.0000  60.0211:100.0;61.0245:11.08;62.0279:1.216;63.031...
     2   C3H8O3            0.9999  92.0473:100.0;93.0507:10.55;94.0541:1.159;95.057...
     """
-    data_frame=copy.deepcopy(data_frame)      
-    for index in (data_frame.index):
+    data_frame = copy.deepcopy(data_frame)
+    for index in data_frame.index:
         try:
             molF = EmpiricalFormula(data_frame[molformula_col][index])
-            isotopes=molF.getIsotopeDistribution(CoarseIsotopePatternGenerator(4))
+            isotopes = molF.getIsotopeDistribution(CoarseIsotopePatternGenerator(4))
             prob_sum = sum([iso.getIntensity() for iso in isotopes.getContainer()])
-            distribution=';'.join([f'{round(iso.getMZ(),4)}:{round(iso.getIntensity()*100,4)}' for iso in isotopes.getContainer()])
-            sumR=round(prob_sum,4)  
-            data_frame.loc[index,'probability_sum']=sumR
-            data_frame.loc[index,'mass_distribution']=distribution
+            distribution = ";".join(
+                [
+                    f"{round(iso.getMZ(),4)}:{round(iso.getIntensity()*100,4)}"
+                    for iso in isotopes.getContainer()
+                ]
+            )
+            sumR = round(prob_sum, 4)
+            data_frame.loc[index, "probability_sum"] = sumR
+            data_frame.loc[index, "mass_distribution"] = distribution
         except Exception:
             pass
-    
+
     return data_frame
 
-def search_pubchem(data_frame:pd.DataFrame,entry_col:str,entry_type:str='smiles') -> pd.DataFrame:
+
+def search_pubchem(
+    data_frame: pd.DataFrame, entry_col: str, entry_type: str = "smiles"
+) -> pd.DataFrame:
     """
     Searches the PubChem database for compounds that match a given data frame of identifiers.
 
@@ -133,20 +153,23 @@ def search_pubchem(data_frame:pd.DataFrame,entry_col:str,entry_type:str='smiles'
     """
     for index in tqdm(data_frame.index):
         try:
-            matches=pcp.get_compounds(data_frame[entry_col][index],namespace=entry_type)
-            cids=[mat.cid for mat in matches]
-            sids=[m for mat in matches if mat.sids for m in mat.sids]
-            synonyms=[m for mat in matches if mat.synonyms for m in mat.synonyms]
-            data_frame.loc[index,'PubChem_CID']=';'.join(map(str,cids))
-            data_frame.loc[index,'PubChem_SID']=';'.join(map(str,sids[:3]))
-            data_frame.loc[index,'PubChem_Synonyms']=';'.join(map(str,synonyms))
+            matches = pcp.get_compounds(
+                data_frame[entry_col][index], namespace=entry_type
+            )
+            cids = [mat.cid for mat in matches]
+            sids = [m for mat in matches if mat.sids for m in mat.sids]
+            synonyms = [m for mat in matches if mat.synonyms for m in mat.synonyms]
+            data_frame.loc[index, "PubChem_CID"] = ";".join(map(str, cids))
+            data_frame.loc[index, "PubChem_SID"] = ";".join(map(str, sids[:3]))
+            data_frame.loc[index, "PubChem_Synonyms"] = ";".join(map(str, synonyms))
 
         except Exception:
             pass
 
     return data_frame
 
-def classify_molecules(data_frame:pd.DataFrame,smiles_col:str,names_col:str):
+
+def classify_molecules(data_frame: pd.DataFrame, smiles_col: str, names_col: str):
     """
     Classify molecules based on their SMILES strings.
 
@@ -175,60 +198,83 @@ def classify_molecules(data_frame:pd.DataFrame,smiles_col:str,names_col:str):
     requests.exceptions.HTTPError
         If the query to the ClassyFire web service fails.
     """
-    
-    URL = 'http://classyfire.wishartlab.com'
-    
-    def _submit_query (data_frame:pd.DataFrame, smiles_col:str, names_col:str, label:str='Metabolites',query_type='STRUCTURE'):
 
-        unique_mols=data_frame.drop_duplicates(subset=[names_col,smiles_col])
+    URL = "http://classyfire.wishartlab.com"
 
-        entries = [f"{unique_mols[names_col][index]}\t{unique_mols[smiles_col][index]}" for index in unique_mols.index]
-        
-        query_pattern='\n'.join(entries)
+    def _submit_query(
+        data_frame: pd.DataFrame,
+        smiles_col: str,
+        names_col: str,
+        label: str = "Metabolites",
+        query_type="STRUCTURE",
+    ):
+        unique_mols = data_frame.drop_duplicates(subset=[names_col, smiles_col])
+
+        entries = [
+            f"{unique_mols[names_col][index]}\t{unique_mols[smiles_col][index]}"
+            for index in unique_mols.index
+        ]
+
+        query_pattern = "\n".join(entries)
 
         try:
-            q = requests.post(f'{URL}/queries', json={'label':'caca', 'query_input': query_pattern, 'query_type':'STRUCTURE','fstruc_content_type':'tsv'},
-                      headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
+            q = requests.post(
+                f"{URL}/queries",
+                json={
+                    "label": "caca",
+                    "query_input": query_pattern,
+                    "query_type": "STRUCTURE",
+                    "fstruc_content_type": "tsv",
+                },
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                },
+            )
 
-            return q.json()['id']
+            return q.json()["id"]
         except requests.exceptions.HTTPError as e:
             return e.response
 
-    def _get_query(query_id:str, data_format:str='json'):
+    def _get_query(query_id: str, data_format: str = "json"):
         try:
-            r = requests.get(f'{URL}/queries/{query_id}.json', headers={'Accept': 'application/json'})
+            r = requests.get(
+                f"{URL}/queries/{query_id}.json", headers={"Accept": "application/json"}
+            )
 
         except requests.exceptions.HTTPError as e:
             return e.response
 
         return r.json()
 
-    def _add_classification_to_df(data_frame,json_data,names_col):
-        data={}
-        for e in json_data['entities']:
-            cl={}
-            for k,v in e.items():
-                if 'name' in v:
-                    cl[k] = v['name']
-                if 'molecular_framework' in k:
-                    cl[k]=v
-                if 'substituents' in k:
-                    cl[k]=';'.join(v)
-            data[e['identifier']]=cl
+    def _add_classification_to_df(data_frame, json_data, names_col):
+        data = {}
+        for e in json_data["entities"]:
+            cl = {}
+            for k, v in e.items():
+                if "name" in v:
+                    cl[k] = v["name"]
+                if "molecular_framework" in k:
+                    cl[k] = v
+                if "substituents" in k:
+                    cl[k] = ";".join(v)
+            data[e["identifier"]] = cl
 
         for index in data_frame.index:
             try:
-                indx_class=data[data_frame[names_col][index]]
-                data_frame.loc[index, indx_class.keys()]= indx_class.values()
+                indx_class = data[data_frame[names_col][index]]
+                data_frame.loc[index, indx_class.keys()] = indx_class.values()
             except Exception:
                 pass
-        
+
         return data_frame
-            
-    data_frame=copy.deepcopy(data_frame)
-    
-    job_id=_submit_query(data_frame,smiles_col,names_col)
-    results=_get_query(job_id)
-    data_frame_classification=_add_classification_to_df(data_frame,results,names_col)
-    
+
+    data_frame = copy.deepcopy(data_frame)
+
+    job_id = _submit_query(data_frame, smiles_col, names_col)
+    results = _get_query(job_id)
+    data_frame_classification = _add_classification_to_df(
+        data_frame, results, names_col
+    )
+
     return data_frame_classification
