@@ -12,8 +12,6 @@ The module contains the following functions:
 - load_microbes_data: Load the microbes data from a compressed tab-separated file.
 """
 
-__version__ = "0.1.4"
-
 __all__ = [
     "load_reaction_rules",
     "load_human_evidences",
@@ -43,10 +41,13 @@ def load_reaction_rules():
 
     Returns:
         pandas.DataFrame: A dataframe containing the reaction rules, with columns:
-            - rule_id: The unique identifier of the rule
-            - reactant: The chemical formula of the reactant
-            - product: The chemical formula of the product
-            - rate_constant: The rate constant of the reaction
+            - num_atoms : Number of atoms to match in the query to perfom a prediction. 
+            - rule : SMARTS string of the single reactant reaction rule (SRRR).
+            - reaction_id : Reaction_id in unified MetaNetX v4.0 id or AGORA2.
+            - substrate : MetaNetX id of the Real subtrate of the SRRR.
+            - substrate_map : Atom mappeed SMARTS of the of the Real subtrate of the SRRR.  
+            - product : MetaNetX id of the Main real subtrate of the SRRR.
+            - product_map : Atom mappeed SMARTS of Main real product of the SRRR.
     """
     logging.info("Loading reaction rules...")
     return pd.read_csv(__REACTION_RULES, sep="\t", compression="gzip")
@@ -58,11 +59,16 @@ def load_human_evidences():
 
     Returns:
         pandas.DataFrame: A dataframe containing the human evidences, with columns:
-            - evidence_id: The unique identifier of the evidence
-            - gene: The gene symbol of the gene involved in the evidence
-            - disease: The disease name of the disease involved in the evidence
-            - score: The score of the evidence, ranging from 0 to 1
+            - source : The unique identifier of the source coming from the metabolic reconstruction.
+            - name : Name of the biotransformations, can match with enzyme name.
+            - ec : Enzyme Commission number for the biotransformation.
+            - mnx_id : Unified id from MetaNetX v4.0. 
+            - organisms_count : Number of organims where this souce id has been found.
+            - xrefs : coss-references to other reaction databases.
+            - origin : Tells if the reaction is coming from human or gut microbes.
+            - complexes_count : Numer of genes or complexes found in the metabolic network for this biotransformation. 
     """
+    logging.info("Loading human evidences...")
     return pd.read_csv(__HUMAN_EVIDENCES, sep="\t", compression="gzip")
 
 
@@ -72,12 +78,16 @@ def load_microbes_evidences():
 
     Returns:
         pandas.DataFrame: A dataframe containing the microbes evidences, with columns:
-            - evidence_id: The unique identifier of the evidence
-            - microbe: The scientific name of the microbe involved in the evidence
-            - disease: The disease name of the disease involved in the evidence
-            - score: The score of the evidence, ranging from 0 to 1
+            - source : The unique identifier of the source coming from the metabolic reconstruction.
+            - name : Name of the biotransformations, can match with enzyme name.
+            - ec : Enzyme Commission number for the biotransformation.
+            - mnx_id : Unified id from MetaNetX v4.0. 
+            - organisms_count : Number of organims where this souce id has been found.
+            - xrefs : coss-references to other reaction databases.
+            - origin : Tells if the reaction is coming from human or gut microbes.
+            - complexes_count : Numer of genes or complexes found in the metabolic network for this biotransformation. 
     """
-    logging.info("Loading human evidences...")
+    logging.info("Loading microbes evidences...")
     return pd.read_csv(__MICROBES_EVIDENCES, sep="\t", compression="gzip")
 
 
@@ -86,14 +96,13 @@ def load_microbes_reactions():
     Load the microbes reactions from a compressed tab-separated file.
 
     Returns:
-        pandas.DataFrame: A dataframe containing the microbes reactions, with columns:
-            - reaction_id: The unique identifier of the reaction
-            - microbe: The scientific name of the microbe involved in the reaction
-            - reactant: The chemical formula of the reactant
-            - product: The chemical formula of the product
-            - rate_constant: The rate constant of the reaction
+        pandas.DataFrame: A dataframe containing the microbes reactions.
+         - index: strain name of all gut microbes included in microbeRX (source: AGORA2).
+         - columns : source name of biotransformation from the metabolic reconstructions.
+         - data : any cell contains information about the genes or complexes that have been annotated for each organims and biotransformation.
+            
     """
-    logging.info("Loading microbes evidences...")
+    logging.info("Loading microbes reactions...")
     return pd.read_csv(
         __MICROBES_REACTIONS, sep="\t", index_col=[0], compression="gzip", dtype=str
     )
@@ -105,10 +114,25 @@ def load_microbes_data():
 
     Returns:
         pandas.DataFrame: A dataframe containing the microbes data, with columns:
-            - microbe_id: The unique identifier of the microbe
-            - name: The scientific name of the microbe
-            - type: The type of the microbe (e.g. bacteria, virus, fungus, etc.)
-            - genome: The genome sequence of the microbe
+            - microbe_name
+            - Strain
+            - Species
+            - Genus
+            - Family 
+            - Order
+            - Class
+            - Phylum
+            - Kingdom
+            - Host
+            - NCBI Taxonomy ID
+            - Cultured
+            - Ecosystem
+            - Ecosystem Category
+            - Ecosystem Subtype
+            - Ecosystem Type
+            - Gram Staining
+            - Oxygen Requirement
+            - Motility
     """
-    logging.info("Loading microbes reactions...")
+    logging.info("Loading microbes data...")
     return pd.read_csv(__MICROBES_DATA, sep="\t", compression="gzip")

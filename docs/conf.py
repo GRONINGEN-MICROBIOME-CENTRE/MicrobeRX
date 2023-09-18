@@ -9,10 +9,10 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
+#import os
+#import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join("../../microberx")))
+#sys.path.insert(0, os.path.abspath(os.path.join("../../microberx")))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -20,8 +20,7 @@ sys.path.insert(0, os.path.abspath(os.path.join("../../microberx")))
 project = "MicrobeRX"
 copyright = "2023, Angel J. Ruiz-Moreno"
 author = "Angel J. Ruiz-Moreno"
-release = "0.0.2"
-
+release = "0.2.0"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -31,12 +30,40 @@ extensions = [
     "sphinx.ext.napoleon",
     "nbsphinx",
     "sphinx_rtd_theme",
+    "autoapi.extension"
 ]
+
+autoapi_dirs = ['../microberx']
+autoapi_member_order= 'bysource'
+autodoc_typehints = 'description'
+
+autoapi_add_toctree_entry = True
+
+
+suppress_warnings = ["autoapi"]
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 
-autodoc_member_order = 'bysource'
+# -- Options for Autodoc -------------------------------------------------
+
+#autodoc_member_order = 'bysource'
+#autodoc_mock_imports = [
+    #"rdkit",
+    #"datamol",
+    #"pyopenms",
+    #"pubchempy",
+    #"pandas",
+    #"plotly",
+    #"mols2grid",
+    #"rxnmapper",
+    #"distinctipy",
+    #"numpy",
+    #"matplotlib",
+    #"tqdm",
+    #"importlib_resources",
+    #"PIL",
+#]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -68,19 +95,4 @@ html_theme_options = {
     "titles_only": False,
 }
 
-autodoc_mock_imports = [
-    "rdkit",
-    "datamol",
-    "pyopenms",
-    "pubchempy",
-    "pandas",
-    "plotly",
-    "mols2grid",
-    "rxnmapper",
-    "distinctipy",
-    "numpy",
-    "matplotlib",
-    "tqdm",
-    "importlib_resources",
-    "PIL",
-]
+
