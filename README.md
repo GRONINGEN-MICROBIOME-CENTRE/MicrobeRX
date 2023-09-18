@@ -6,8 +6,9 @@
 
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FGRONINGEN-MICROBIOME-CENTRE%2FMicrobeRX&label=Views&labelColor=%23697689&countColor=%23ff8a65&style=flat)
 
-[GitHub](https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX)
-[Read the Docs](https://microberx.readthedocs.io/)
+- [GitHub](https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX)
+
+- [Read the Docs](https://microberx.readthedocs.io/)
 
 ## Description
 
@@ -59,7 +60,10 @@ python setup.py install
 
 ## Tutorials
 
-[MicobeRX documentation](https://microberx.readthedocs.io)
+[Prediction of Metabolites](https://microberx.readthedocs.io/en/latest/tutorials/PredictionMetabolites.html)
+[Generation of Reaction Rules](https://microberx.readthedocs.io/en/latest/tutorials/ReactionRules.html)
+[Omics Integrator](https://microberx.readthedocs.io/en/latest/tutorials/OmicsIntegrator.html)
+[MicrobeRX API](https://microberx.readthedocs.io/en/latest/autoapi/index.html)
 
 ## Workflow
 
