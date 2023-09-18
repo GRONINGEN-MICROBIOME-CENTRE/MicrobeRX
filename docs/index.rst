@@ -13,12 +13,12 @@ MicrobeRX's documentation
    tutorials/ReactionRules
    tutorials/PredictionMetabolites
    tutorials/OmicsIntegrator
-   
-.. toctree::
-   :maxdepth: 2
-   :caption: API DOCUMENTATION:
 
-   microberx
+.. .. toctree::
+..   :maxdepth: 2
+..   :caption: API DOCUMENTATION:
+
+..   microberx
 
 Indices and tables
 ==================
