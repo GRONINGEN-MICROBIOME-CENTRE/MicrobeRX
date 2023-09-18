@@ -20,8 +20,7 @@ sys.path.insert(0, os.path.abspath(os.path.join("../../microberx")))
 project = "MicrobeRX"
 copyright = "2023, Angel J. Ruiz-Moreno"
 author = "Angel J. Ruiz-Moreno"
-release = "0.0.2"
-
+release = "0.2.0"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -36,7 +35,25 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 
+# -- Options for Autodoc -------------------------------------------------
 autodoc_member_order = 'bysource'
+
+autodoc_mock_imports = [
+    "rdkit",
+    "datamol",
+    "pyopenms",
+    "pubchempy",
+    "pandas",
+    "plotly",
+    "mols2grid",
+    "rxnmapper",
+    "distinctipy",
+    "numpy",
+    "matplotlib",
+    "tqdm",
+    "importlib_resources",
+    "PIL",
+]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -68,19 +85,4 @@ html_theme_options = {
     "titles_only": False,
 }
 
-autodoc_mock_imports = [
-    "rdkit",
-    "datamol",
-    "pyopenms",
-    "pubchempy",
-    "pandas",
-    "plotly",
-    "mols2grid",
-    "rxnmapper",
-    "distinctipy",
-    "numpy",
-    "matplotlib",
-    "tqdm",
-    "importlib_resources",
-    "PIL",
-]
+
