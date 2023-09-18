@@ -60,10 +60,10 @@ python setup.py install
 
 ## Tutorials
 
-[Prediction of Metabolites](https://microberx.readthedocs.io/en/latest/tutorials/PredictionMetabolites.html)
-[Generation of Reaction Rules](https://microberx.readthedocs.io/en/latest/tutorials/ReactionRules.html)
-[Omics Integrator](https://microberx.readthedocs.io/en/latest/tutorials/OmicsIntegrator.html)
-[MicrobeRX API](https://microberx.readthedocs.io/en/latest/autoapi/index.html)
+- [Generation of Reaction Rules](https://microberx.readthedocs.io/en/latest/tutorials/ReactionRules.html)
+- [Prediction of Metabolites](https://microberx.readthedocs.io/en/latest/tutorials/PredictionMetabolites.html)
+- [Omics Integrator](https://microberx.readthedocs.io/en/latest/tutorials/OmicsIntegrator.html)
+- [MicrobeRX API](https://microberx.readthedocs.io/en/latest/autoapi/index.html)
 
 ## Workflow
 
