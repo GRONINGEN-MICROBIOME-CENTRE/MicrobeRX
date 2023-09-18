@@ -36,6 +36,7 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 
+autodoc_member_order = 'bysource'
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -47,10 +48,14 @@ nbsphinx_custom_formats = {
     ".md": ["jupytext.reads", {"fmt": "mystnb"}],
 }
 
+html_show_sourcelink = False
+
+github_url = "https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX"
+
 html_theme_options = {
     "canonical_url": "",
     "analytics_id": "",  #  Provided by Google in your dashboard
-    "logo_only": True,  #  Set as "True" to display logo only
+    "logo_only": False,  #  Set as "True" to display logo only
     "display_version": True,
     "prev_next_buttons_location": "bottom",
     "style_external_links": False,

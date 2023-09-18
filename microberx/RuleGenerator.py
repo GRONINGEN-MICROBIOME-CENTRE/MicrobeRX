@@ -3,19 +3,21 @@ This is a module that provides functions to manipulate chemical reactions and an
 
 The module contains the following functions:
 
-decompose_reaction: A fucntion to parse chemical reaction from a string format into a dictionary format.
+- decompose_reaction: A fucntion to parse chemical reaction from a string format into a dictionary format.
 
-sanitize_reaction: Sanitizes a chemical reaction by removing stereochemistry, replacing dummy atoms with carbon, and standardizing the molecules.
+- sanitize_reaction: Sanitizes a chemical reaction by removing stereochemistry, replacing dummy atoms with carbon, and standardizing the molecules.
 
-map_reaction: Maps the atoms of a chemical reaction using either RXNMapper or ReactionDecoder.
+- map_reaction: Maps the atoms of a chemical reaction using either RXNMapper or ReactionDecoder.
 
-set_reaction_ids: Sets the IDs of the reactants and products of a target reaction based on their molecular formulas and a reference reaction.
+- set_reaction_ids: Sets the IDs of the reactants and products of a target reaction based on their molecular formulas and a reference reaction.
 
-reverse_reaction: Reverses a chemical reaction by swapping the reactants and products.
+- reverse_reaction: Reverses a chemical reaction by swapping the reactants and products.
 
-generate_single_reactant_reactions: Generates a dictionary of single reactant reactions from a mapped reaction.
+- generate_single_reactant_reactions: Generates a dictionary of single reactant reactions from a mapped reaction.
 
-generate_rules: Generates a dictionary of rules for a single reactant reaction based on the reacting atoms and the rings.
+- generate_rules: Generates a dictionary of rules for a single reactant reaction based on the reacting atoms and the rings.
+
+- Reaction: A class to represent a chemical reaction with various attributes and methods.
 
 """
 
@@ -27,6 +29,7 @@ __all__ = [
     "set_reaction_ids",
     "reverse_reaction",
     "generate_rules",
+    "Reaction",
 ]
 
 

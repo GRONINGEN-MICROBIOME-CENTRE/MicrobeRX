@@ -8,7 +8,7 @@ MicrobeRX's documentation
    
 .. toctree::
    :maxdepth: 2
-   :caption: TUTORIALS:
+   :caption: EXAMPLES:
 
    tutorials/ReactionRules
    tutorials/PredictionMetabolites
