@@ -1,12 +1,14 @@
 <img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/main/img/logo.png"  width="320" height="300">
 
-[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Workflow**](#workflow) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
+[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Tutorials**](#tutorials) | [**Workflow**](#workflow) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
 
 [![DOI](https://zenodo.org/badge/657648349.svg)](https://zenodo.org/badge/latestdoi/657648349)
 
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FGRONINGEN-MICROBIOME-CENTRE%2FMicrobeRX&label=Views&labelColor=%23697689&countColor=%23ff8a65&style=flat)
 
 [MicrobeRX GitHub](https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX)
+
+
 
 ## Description
 
@@ -56,6 +58,9 @@ python setup.py install
 
 [MicrobeRX Colab](https://shorturl.at/cpqu4)
 
+## Tutorials
+
+[MicobeRX documentation](https://microberx.readthedocs.io/en/latest/#)
 
 ## Workflow
 
