@@ -82,7 +82,7 @@ def plot_species_sunburst(sources: list, path: str = "short"):
     phyla = MICROBES_DATA.Phylum.unique()
     colors = [
         distinctipy.get_hex(c)
-        for c in distinctipy.get_colors(n_colors=len(phyla), pastel_factor=0.8)
+        for c in distinctipy.get_colors(n_colors=len(phyla), pastel_factor=0.7)
     ]
     color_map = dict(zip(phyla, colors))
 
