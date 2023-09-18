@@ -28,6 +28,7 @@ __all__ = [
     "sanitize_reaction",
     "set_reaction_ids",
     "reverse_reaction",
+    "generate_single_reactant_reactions",
     "generate_rules",
     "Reaction",
 ]
