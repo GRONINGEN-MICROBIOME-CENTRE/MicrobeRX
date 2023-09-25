@@ -1,0 +1,7 @@
+include README.rst
+include LICENSE
+include requirements.txt
+graft microberx
+recursive-exclude * *.py[co]
+include versioneer.py
+include is_number/_version.py

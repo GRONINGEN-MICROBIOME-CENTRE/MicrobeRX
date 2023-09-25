@@ -1,10 +1,14 @@
-<img src="img/logo.png"  width="320" height="300">
+<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/tree/main/img/logo.png"  width="320" height="300">
 
-[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Examples**](#examples) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
+[**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Tutorials**](#tutorials) | [**Workflow**](#workflow) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
 
 [![DOI](https://zenodo.org/badge/657648349.svg)](https://zenodo.org/badge/latestdoi/657648349)
 
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FGRONINGEN-MICROBIOME-CENTRE%2FMicrobeRX&label=Views&labelColor=%23697689&countColor=%23ff8a65&style=flat)
+
+- [GitHub](https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX)
+
+- [Read the Docs](https://microberx.readthedocs.io/)
 
 ## Description
 
@@ -22,7 +26,7 @@ Question about usage or troubleshooting? Please leave a comment in the discussio
 
 ## Requirements
 
-MicrobeRX is reliant on a variety of academic software. The Jupyter Dock.yaml file contains all the tools and dependencies, but the following are some of the most noticeable:
+MicrobeRX is reliant on a variety of academic software. The following are some of the most noticeable:
 
 - rdkit
 - datamol
@@ -42,20 +46,28 @@ MicrobeRX is reliant on a variety of academic software. The Jupyter Dock.yaml fi
 pip install MicrobeRX
 ```
 
-**2. GoogleColab:**
+**2. Installing MicrobeRX from source:**
 
-> [MicrobeRX Colab](https://shorturl.at/cpqu4)
+```
+git clone https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX.git
+cd MicrobeRX
+python setup.py install
+```
 
+**3. Using MicrobeRX in GoogleColab:**
 
-## Examples
+[MicrobeRX Colab](https://shorturl.at/cpqu4)
 
-> **Predicition scoring** <img src="img/scoring.png"  width="200" height="200">
-> **Metabolic accesibility** <img src="img/accesibility.png"  width="150" height="200">
+## Tutorials
 
-> **Molecular descriptors** <img src="img/descriptors.png"  width="200" height="200">
-> **Isotopic mass** <img src="img/mass.png"  width="200" height="200">
-  
-> **Relationships** <img src="img/sankey.png"  width="500" height="300">
+- [Generation of Reaction Rules](https://microberx.readthedocs.io/en/latest/tutorials/ReactionRules.html)
+- [Prediction of Metabolites](https://microberx.readthedocs.io/en/latest/tutorials/PredictionMetabolites.html)
+- [Omics Integrator](https://microberx.readthedocs.io/en/latest/tutorials/OmicsIntegrator.html)
+- [MicrobeRX API](https://microberx.readthedocs.io/en/latest/autoapi/index.html)
+
+## Workflow
+
+<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/tree/main/img/workflow.png"  width="600" height="800">
 
 ## Citation
 
@@ -70,7 +82,7 @@ This tool is under GPL-3.0 license, see the LICENSE file for details.
 
 - This release includes the functionalities to generate reaction rules
 - This release includes the functionalities to predict, analyze and visualize metabolites.
-- This release NOT includes yet the functionalities to find microorganism and enzymes. Sorry!
+- This release includes some functionalities to find microorganism. However, the options to analyze enzymes and their fucntionalities are still under testing.
 
 ## Disclaimer 
 
