@@ -1,4 +1,4 @@
-<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/main/img/logo.png"  width="320" height="300">
+<img src="img/logo.png"  width="320" height="300">
 
 [**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Tutorials**](#tutorials) | [**Workflow**](#workflow) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
 
@@ -67,7 +67,7 @@ python setup.py install
 
 ## Workflow
 
-<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/development/img/workflow.png"  width="600" height="800">
+<img src="img/workflow.png"  width="600" height="800">
 
 ## Citation
 
