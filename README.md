@@ -1,4 +1,4 @@
-<img src="img/logo.png"  width="320" height="300">
+<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/tree/main/img/logo.png"  width="320" height="300">
 
 [**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Tutorials**](#tutorials) | [**Workflow**](#workflow) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
 
@@ -67,7 +67,7 @@ python setup.py install
 
 ## Workflow
 
-<img src="img/workflow.png"  width="600" height="800">
+<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/tree/main/img/workflow.png"  width="600" height="800">
 
 ## Citation
 
@@ -82,7 +82,7 @@ This tool is under GPL-3.0 license, see the LICENSE file for details.
 
 - This release includes the functionalities to generate reaction rules
 - This release includes the functionalities to predict, analyze and visualize metabolites.
-- This release NOT includes yet the functionalities to find microorganism and enzymes. Sorry!
+- This release includes some functionalities to find microorganism. However, the options to analyze enzymes and their fucntionalities are still under testing.
 
 ## Disclaimer 
 
