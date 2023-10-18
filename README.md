@@ -73,7 +73,7 @@ python setup.py install
 
 If you use this software or its results in your research, publication, or project, please cite it as follows:
 
-> MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome [DOI: 10.5281/zenodo.8207746](https://zenodo.org/record/8207746)
+> Ruiz-Moreno AJ, Jingyuan F. MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome [DOI: 10.5281/zenodo.8207746](https://zenodo.org/record/8207746)
 
 ## License
 This tool is under GPL-3.0 license, see the LICENSE file for details.
