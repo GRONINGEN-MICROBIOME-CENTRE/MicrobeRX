@@ -245,7 +245,7 @@ def classify_molecules(data_frame: pd.DataFrame, smiles_col: str, names_col: str
     
     job_ids=[]
     for c in chunks:
-        job=_submit_query(c,smiles_col='SMILES',names_col=names_col)
+        job=_submit_query(c,smiles_col=smiles_col,names_col=names_col)
         job_ids.append(job)
     
     time.sleep(10)
@@ -253,7 +253,6 @@ def classify_molecules(data_frame: pd.DataFrame, smiles_col: str, names_col: str
     results=[]
     for result in job_ids:
         data=_get_query(str(result))
-        print(len(data['entities']))
         results.append(pd.DataFrame(data['entities']))
     
     class_data=pd.concat(results,ignore_index=True)
