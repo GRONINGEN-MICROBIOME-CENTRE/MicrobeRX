@@ -2,7 +2,7 @@
 
 [**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Tutorials**](#tutorials) | [**Workflow**](#workflow) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8207746.svg)](https://doi.org/10.5281/zenodo.8207746)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10171506.svg)](https://doi.org/10.5281/zenodo.10171506)
 
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FGRONINGEN-MICROBIOME-CENTRE%2FMicrobeRX&label=Views&labelColor=%23697689&countColor=%23ff8a65&style=flat)
 
