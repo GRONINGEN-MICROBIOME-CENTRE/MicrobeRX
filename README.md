@@ -2,7 +2,7 @@
 
 [**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Tutorials**](#tutorials) | [**Workflow**](#workflow) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10171506.svg)](https://doi.org/10.5281/zenodo.10171506)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10204312.svg)](https://doi.org/10.5281/zenodo.10204312)
 
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FGRONINGEN-MICROBIOME-CENTRE%2FMicrobeRX&label=Views&labelColor=%23697689&countColor=%23ff8a65&style=flat)
 
@@ -73,7 +73,7 @@ python setup.py install
 
 If you use this software or its results in your research, publication, or project, please cite it as follows:
 
-> Ruiz-Moreno AJ, Fu J. MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome [DOI: 10.5281/zenodo.10171506](https://zenodo.org/record/10171506)
+> Ruiz-Moreno AJ, Fu J. MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome [DOI: 10.5281/zenodo.10204312](https://zenodo.org/record/10204312)
 
 ## License
 This tool is under GPL-3.0 license, see the LICENSE file for details.
