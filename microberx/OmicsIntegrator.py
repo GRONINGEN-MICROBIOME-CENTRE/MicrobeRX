@@ -3,11 +3,23 @@ This is a module that provides functions to analyze organims, and enzyme involve
 
 The module contains the following functions:
 
-- plot_species_sunburst: The function plot_species_sunburst creates a sunburst plot of the microbial species in the sources list. 
+- plot_species_sunburst: This function creates a sunburst plot of the microbial species in the sources list. 
+
+- fetch_batch_sequences: This function fetches a list of sequences from the NCBI Entrez database. It uses the Biopython library to access the Entrez API and parse the FASTA format. It also uses a helper function _fetch_sequence to fetch and return a single sequence.
+
+- get_interpro: This function retrieves the InterProScan results for a given sequence from the EBI InterProScan 5 web service. 
+
+- plot_interpro_results: This functio creates a bar plot of the InterProScan results for a given sequence.
+
+- run_multi_sequence_aligment: This function performs a multiple sequence alignment (MSA) and a phylogenetic tree construction for a given set of sequences using the ClustalW2 program.
+
+- plot_similarity_matrix: This function creates a heatmap of the pairwise similarity scores for a given set of sequences using the Dash Bio library. It also accepts optional parameters to choose the color map and the homology percentage for the heatmap.
+
+- plot_aligment_chart: This function creates a chart of the multiple sequence alignment (MSA) for a given set of sequences using the Dash Bio library. It also accepts optional parameters to choose the color scale and the conservation method for the chart.
 
 """
 
-__all__ = ["plot_species_sunburst"]
+__all__ = ["plot_species_sunburst","fetch_batch_sequences","get_interpro","plot_interpro_results","run_multi_sequence_aligment","plot_similarity_matrix","plot_aligment_chart"]
 
 import requests, time, re, copy, io
 
