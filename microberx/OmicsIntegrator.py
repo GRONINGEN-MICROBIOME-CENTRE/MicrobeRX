@@ -230,7 +230,7 @@ def get_interpro(sequence_id:str=None, sequence:str=None,email:str=None, sequenc
         "stype":sequence_type,
         "goterms": go_terms, # Include GO terms in the output
         "pathways": pathways, # Include pathway information in the output
-        "sequence": f">{sequence_id}\n{str(sequence)}", # The protein sequence in fasta format
+        "sequence": f">{sequence_id}\n{sequence}", # The protein sequence in fasta format
     }
     
     
@@ -279,7 +279,7 @@ def plot_interpro_results(interpro_results:pd.DataFrame=None, compact:str=True):
     fig: A Plotly Figure object that contains the bar plot. It has one subplot for the sequence. The bar plot shows the distribution of the InterProScan results by their start and stop locations on the sequence. The color of each segment is determined by the InterPro accession or the analysis depending on the value of the compact parameter. The text of each segment shows the InterPro description or the signature description depending on the value of the compact parameter.
     """
     
-    interpro_results['sequence_delta'] = interpro.stop_location - interpro.start_location
+    interpro_results['sequence_delta'] = interpro_results.stop_location - interpro_results.start_location
     interpro_results.sort_values(by='sequence_delta',ascending=False,ignore_index=True,inplace=True)
     
     if compact==True:
@@ -301,7 +301,7 @@ def plot_interpro_results(interpro_results:pd.DataFrame=None, compact:str=True):
 
 
         fig.update_yaxes(autorange="reversed",title = "")
-        fig.update_xaxes(title = 'Sequence', showline = True, linecolor='darkgray',linewidth=2.5,range=[1, interpro.sequence_length.iloc[0]])
+        fig.update_xaxes(title = 'Sequence', showline = True, linecolor='darkgray',linewidth=2.5,range=[1, interpro_compact.sequence_length.iloc[0]])
         fig.update_traces(textposition='inside',textfont_size=12)
         fig.update_layout(title=interpro_compact.accesion.iloc[0],
                           bargap=0.1,
@@ -327,7 +327,7 @@ def plot_interpro_results(interpro_results:pd.DataFrame=None, compact:str=True):
 
 
         fig.update_yaxes(autorange="reversed",title = "")
-        fig.update_xaxes(title = 'Sequence', showline = True, linecolor='darkgray',linewidth=2.5,range=[1, interpro.sequence_length.iloc[0]])
+        fig.update_xaxes(title = 'Sequence', showline = True, linecolor='darkgray',linewidth=2.5,range=[1, interpro_results.sequence_length.iloc[0]])
         fig.update_traces(textposition='inside',textfont_size=12)
         fig.update_layout(title=interpro_results.accesion.iloc[0],
                           bargap=0.1,
