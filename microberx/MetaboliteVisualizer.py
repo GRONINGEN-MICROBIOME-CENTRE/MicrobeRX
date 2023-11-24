@@ -247,7 +247,7 @@ def plot_confidence_scores(data_frame: pd.DataFrame,x: str = "similarity_substra
     )
 
     fig.update_traces(
-        marker_size=3,
+        marker_size=5,
         showlegend=False,
     )
 
