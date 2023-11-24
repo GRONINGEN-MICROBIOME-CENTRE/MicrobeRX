@@ -16,7 +16,7 @@
 
 > The main publication and details about the tool can be found in this publication:
 
->> [publication here]()
+[publication here]()
 
 > The python library was developed to be integrated easily with any other bioinformatic or cheminformatic tool.
 
@@ -73,7 +73,7 @@ python setup.py install
 
 If you use this software or its results in your research, publication, or project, please cite it as follows:
 
-> Ruiz-Moreno AJ, Fu J. MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome [DOI: 10.5281/zenodo.8207746](https://zenodo.org/record/8207746)
+> Ruiz-Moreno AJ, Fu J. MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome [DOI: 10.5281/zenodo.10171506](https://zenodo.org/record/10171506)
 
 ## License
 This tool is under GPL-3.0 license, see the LICENSE file for details.
@@ -82,7 +82,7 @@ This tool is under GPL-3.0 license, see the LICENSE file for details.
 
 - This release includes the functionalities to generate reaction rules
 - This release includes the functionalities to predict, analyze and visualize metabolites.
-- This release includes some functionalities to find microorganism. However, the options to analyze enzymes and their fucntionalities are still under testing.
+- This release includes the functionalities to find microorganism and enzymes.
 
 ## Disclaimer 
 
