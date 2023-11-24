@@ -242,7 +242,7 @@ def plot_confidence_scores(data_frame: pd.DataFrame,x: str = "similarity_substra
         color_continuous_scale=cmap,
         width=800,
         height=600,
-        opacity=0.0,
+        opacity=0.7,
         hover_name="metabolite_id",
     )
 

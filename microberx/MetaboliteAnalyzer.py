@@ -17,8 +17,9 @@ __all__ = [
 ]
 
 
-import requests, copy, random
+import requests, copy, random, time
 import pandas as pd
+import numpy as np
 import pubchempy as pcp
 from pyopenms import *
 
@@ -190,10 +191,10 @@ def classify_molecules(data_frame: pd.DataFrame, smiles_col: str, names_col: str
     requests.exceptions.HTTPError
         If the query to the ClassyFire web service fails.
     """
-
+    
     URL = "http://classyfire.wishartlab.com"
 
-    def _submit_query(data_frame: pd.DataFrame,smiles_col: str,names_col: str,label: str = "Metabolites",query_type="STRUCTURE"):
+    def _submit_query(data_frame: pd.DataFrame,smiles_col: str,names_col: str,label: str = "MicrobeRX",query_type:str="STRUCTURE"):
         unique_mols = data_frame.drop_duplicates(subset=[names_col, smiles_col])
 
         entries = [
@@ -202,14 +203,14 @@ def classify_molecules(data_frame: pd.DataFrame, smiles_col: str, names_col: str
         ]
 
         query_pattern = "\n".join(entries)
-
+        
         try:
             q = requests.post(
                 f"{URL}/queries",
                 json={
-                    "label": "caca",
+                    "label": label,
                     "query_input": query_pattern,
-                    "query_type": "STRUCTURE",
+                    "query_type": query_type,
                     "fstruc_content_type": "tsv",
                 },
                 headers={
@@ -217,10 +218,11 @@ def classify_molecules(data_frame: pd.DataFrame, smiles_col: str, names_col: str
                     "Content-Type": "application/json",
                 },
             )
-
+            
             return q.json()["id"]
         except requests.exceptions.HTTPError as e:
             return e.response
+
 
     def _get_query(query_id: str, data_format: str = "json"):
         try:
@@ -230,37 +232,37 @@ def classify_molecules(data_frame: pd.DataFrame, smiles_col: str, names_col: str
 
         except requests.exceptions.HTTPError as e:
             return e.response
-
+    
         return r.json()
 
-    def _add_classification_to_df(data_frame, json_data, names_col):
-        data = {}
-        for e in json_data["entities"]:
-            cl = {}
-            for k, v in e.items():
-                if "name" in v:
-                    cl[k] = v["name"]
-                if "molecular_framework" in k:
-                    cl[k] = v
-                if "substituents" in k:
-                    cl[k] = ";".join(v)
-            data[e["identifier"]] = cl
-
-        for index in data_frame.index:
-            try:
-                indx_class = data[data_frame[names_col][index]]
-                data_frame.loc[index, indx_class.keys()] = indx_class.values()
-            except Exception:
-                pass
-
-        return data_frame
-
+    
     data_frame = copy.deepcopy(data_frame)
+    
+    if len(data_frame.index)>100:
+        chunks=np.array_split(data_frame, round(len(data_frame.index)/100))
+    else:
+        chunks=[data_frame]
+    
+    job_ids=[]
+    for c in chunks:
+        job=_submit_query(c,smiles_col=smiles_col,names_col=names_col)
+        job_ids.append(job)
+    
+    time.sleep(10)
+    
+    results=[]
+    for result in job_ids:
+        data=_get_query(str(result))
+        results.append(pd.DataFrame(data['entities']))
+    
+    class_data=pd.concat(results,ignore_index=True)
+    
+    class_data=class_data.transform(lambda x: x.apply(lambda y: y['name'] if isinstance(y,dict) else y))
+    class_data['alternative_parents']=class_data['alternative_parents'].apply(lambda x: ';'.join([y['name'] for y in x] if isinstance(x,list) else np.nan))
+    class_data['intermediate_nodes']=class_data['intermediate_nodes'].apply(lambda x: ';'.join([y['name'] for y in x] if isinstance(x,list) else np.nan))
+    class_data['external_descriptors']=class_data['external_descriptors'].apply(lambda x: ';'.join([f"{y['source']}:{y['source_id']}" for y in x] if isinstance(x,list) else np.nan))
+    class_data=class_data.transform(lambda x: x.apply(lambda y: ';'.join(y) if isinstance(y,list) else y))
 
-    job_id = _submit_query(data_frame, smiles_col, names_col)
-    results = _get_query(job_id)
-    data_frame_classification = _add_classification_to_df(
-        data_frame, results, names_col
-    )
-
+    data_frame_classification=data_frame.merge(class_data,left_on=names_col,right_on='identifier', how='outer')
+    
     return data_frame_classification

@@ -1,8 +1,8 @@
-<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/tree/main/img/logo.png"  width="320" height="300">
+<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/main/img/logo.png?raw=true"  width="320" height="300">
 
 [**Description**](#description) | [**Requirements**](#requirements) | [**Installation**](#installation) | [**Tutorials**](#tutorials) | [**Workflow**](#workflow) | [**Citation**](#citation) | [**License**](#license) | [**Information**](#information) | [**Disclaimer**](#disclaimer)
 
-[![DOI](https://zenodo.org/badge/657648349.svg)](https://zenodo.org/badge/latestdoi/657648349)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10171506.svg)](https://doi.org/10.5281/zenodo.10171506)
 
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FGRONINGEN-MICROBIOME-CENTRE%2FMicrobeRX&label=Views&labelColor=%23697689&countColor=%23ff8a65&style=flat)
 
@@ -67,13 +67,13 @@ python setup.py install
 
 ## Workflow
 
-<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/tree/main/img/workflow.png"  width="600" height="800">
+<img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/main/img/workflow.png?raw=true"  width="600" height="800">
 
 ## Citation
 
 If you use this software or its results in your research, publication, or project, please cite it as follows:
 
-> MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome [DOI: 10.5281/zenodo.8207746](https://zenodo.org/record/8207746)
+> Ruiz-Moreno AJ, Fu J. MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome [DOI: 10.5281/zenodo.8207746](https://zenodo.org/record/8207746)
 
 ## License
 This tool is under GPL-3.0 license, see the LICENSE file for details.

@@ -8,9 +8,12 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = "v0.1.4"
 DESCRIPTION = "MicrobeRX is A tool for enzymatic reaction-based metabolite prediction in the gut microbiome."
 # LONG_DESCRIPTION = ''
+
+#Set requeriments packages
+
+requeriments= [i.strip() for i in open("requirements.txt").readlines()]
 
 # Setting up
 setup(
@@ -23,7 +26,7 @@ setup(
     long_description_content_type="text/markdown",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=[],
+    install_requires=requeriments,
     keywords=[
         "python",
         "metabolite",
