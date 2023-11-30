@@ -5,6 +5,8 @@ The module contains the following functions:
 
 - plot_molecular_descriptors: Generated and interactive of the molecular descriptors of a given data frame using polar coordinates.
 
+- plot_boiled_egg: Plots the boiled egg diagram of a given data frame using scatter plot.
+
 - plot_isotopic_masses: Generated and interactive plot of the isotopic mass distribution of a given data frame using plotly.
 
 - plot_confidence_scores: Creates a 3D scatter plot of the data frame with the x, y, and z axes representing the similarity of substrates, products, and reacting atoms efficiency respectively.
@@ -19,6 +21,7 @@ The module contains the following functions:
 
 __all__ = [
     "plot_molecular_descriptors",
+    "plot_boiled_egg",
     "plot_isotopic_masses",
     "plot_confidence_scores",
     "plot_metabolic_accesibility",
@@ -135,6 +138,52 @@ def plot_molecular_descriptors(data_frame: pd.DataFrame, names_col: str):
     )
 
     return Figure
+
+def plot_boiled_egg(data_frame: pd.DataFrame, names_col: str):
+    """ 
+    Plots the boiled egg diagram of a given data frame using scatter plot.
+
+    Parameters
+    ----------
+    data_frame : pd.DataFrame
+        A pandas data frame that contains the TPSA and LogP values as columns and the compound names as rows.
+    names_col : str
+        A string that specifies the name of the column that contains the compound names.
+
+    Returns
+    -------
+    Figure : plotly.graph_objects.Figure
+        A plotly figure object that shows the scatter plot of the TPSA and LogP values. The plot has the following features:
+            - The x-axis represents the topological polar surface area (TPSA) of each compound, ranging from 0 to 142.
+            - The y-axis represents the octanol-water partition coefficient (LogP) of each compound, ranging from -2.3 to 6.8.
+            - Each compound is plotted as a red dot with its name displayed in the hover.
+            - The human intestinal absorption (HIA) and blood-brain barrier (BBB) regions are plotted as white and orange circles, respectively. The HIA region indicates the compounds that are likely to be absorbed by the human intestine, while the BBB region indicates the compounds that are likely to cross the blood-brain barrier.
+    """
+    fig = px.scatter(data_frame, x="TPSA", y="LogP",width=800,height=600,color_discrete_sequence=['tomato'],hover_name=names_col)
+
+
+    fig.add_shape(type="circle",
+        label={"text":"HIA", "textposition":"middle right"},
+        xref="x", yref="y",
+        fillcolor="white",
+        x0=0, y0=-2.3, x1=142, y1=6.8,
+        line_color="white",opacity=1,layer='below'
+    )
+
+    fig.add_shape(type="circle",
+        label={"text":"BBB","textposition":"middle center"},
+        xref="x", yref="y",
+        fillcolor="orange",
+        x0=0, y0=0.4, x1=79, y1=6,
+        line_color="orange",opacity=1,layer='below',
+    )
+
+    fig.update_xaxes(showgrid=False, zeroline=False)
+    fig.update_yaxes(showgrid=False, zeroline=False)
+
+    fig.update_layout(plot_bgcolor='rgba(232, 232, 232, 1)',
+                      paper_bgcolor='rgba(0, 0, 0, 0)',font=dict(size=14))
+    return fig
 
 
 def plot_isotopic_masses(data_frame: pd.DataFrame, names_col: str, mass_distribution_col: str):

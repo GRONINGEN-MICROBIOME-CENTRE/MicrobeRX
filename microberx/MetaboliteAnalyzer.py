@@ -30,13 +30,14 @@ from distinctipy import distinctipy
 
 from rdkit import Chem
 from rdkit.Chem import AllChem, Descriptors
+from rdkit.Chem.FilterCatalog import *
 
 from tqdm.notebook import tqdm
 
 
 def compute_molecular_descriptors(data_frame: pd.DataFrame, smiles_col: str):
-    """
-    Computes some molecular descriptors for a given data frame of SMILES strings.
+    """ 
+    Computes some molecular descriptors and filters for a given data frame of SMILES strings.
 
     Parameters
     ----------
@@ -48,7 +49,7 @@ def compute_molecular_descriptors(data_frame: pd.DataFrame, smiles_col: str):
     Returns
     -------
     data_frame : pd.DataFrame
-        The same data frame as input, but with additional columns for each molecular descriptor computed. The descriptors are:
+        The same data frame as input, but with additional columns for each molecular descriptor and filter computed. The descriptors and filters are:
             - MolWt: the molecular weight of the molecule
             - LogP: the octanol-water partition coefficient of the molecule
             - NumHAcceptors: the number of hydrogen bond acceptors in the molecule
@@ -56,8 +57,21 @@ def compute_molecular_descriptors(data_frame: pd.DataFrame, smiles_col: str):
             - NumRotatableBonds: the number of rotatable bonds in the molecule
             - TPSA: the topological polar surface area of the molecule
             - MolFormula: the molecular formula of the molecule
+            - Lipinski: a boolean value that indicates whether the molecule satisfies the Lipinski's rule of five or not. The rule of five states that most drug-like molecules have molecular weight less than 500, LogP less than 5, number of hydrogen bond acceptors less than 10, and number of hydrogen bond donors less than 5.
+            - Veber: a boolean value that indicates whether the molecule satisfies the Veber's rule or not. The rule states that most orally active drugs have 10 or fewer rotatable bonds and a polar surface area equal to or less than 140 Å2.
+            - Brenk: a string that contains the names of the Brenk filters that the molecule matches, separated by semicolons. The Brenk filters are a set of 68 unwanted substructures that are associated with reactive fucntional groups.
+            - PAINS: a string that contains the names of the PAINS filters that the molecule matches, separated by semicolons. The PAINS filters are a set of 480 substructures that are associated with pan-assay interference compounds.
     """
+    brenk_params = FilterCatalogParams()
+    brenk_params.AddCatalog(FilterCatalogParams.FilterCatalogs.BRENK)
+    brenk = FilterCatalog(brenk_params)
+
+    pains_params = FilterCatalogParams()
+    pains_params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS)
+    pains = FilterCatalog(pains_params)
+    
     data_frame = copy.deepcopy(data_frame)
+    
     for index in data_frame.index:
         mol = Chem.MolFromSmiles(data_frame[smiles_col][index])
         if mol:
@@ -71,6 +85,24 @@ def compute_molecular_descriptors(data_frame: pd.DataFrame, smiles_col: str):
             data_frame.loc[index, "TPSA"] = Descriptors.TPSA(mol)
             data_frame.loc[index, "MolFormula"] = AllChem.CalcMolFormula(mol)
 
+            if data_frame["NumHDonors"][index] > 5 or data_frame["NumHAcceptors"][index] > 10 or data_frame["MolWt"][index] > 500 or data_frame["LogP"][index] > 5 :
+                data_frame.loc[index,"Lipinski"]=False
+            else: 
+                data_frame.loc[index,"Lipinski"]=True
+        
+            if data_frame["NumHDonors"][index] > 5 or data_frame["NumHAcceptors"][index] > 10 or data_frame["MolWt"][index] > 500 or data_frame["LogP"][index] > 5 or data_frame["NumRotatableBonds"][index] > 10 or data_frame["TPSA"][index] > 140:
+                data_frame.loc[index,"Veber"]=False
+            else:
+                data_frame.loc[index,"Veber"]=True
+        
+            brenk_results=brenk.GetMatches(mol)
+            pains_results=pains.GetMatches(mol)
+
+            if brenk_results:
+                data_frame.loc[index,"Brenk"]=";".join([r.GetDescription() for r in brenk_results])
+            if pains_results:
+                data_frame.loc[index,"PAINS"]=";".join([r.GetDescription() for r in pains_results])
+                
     return data_frame
 
 
