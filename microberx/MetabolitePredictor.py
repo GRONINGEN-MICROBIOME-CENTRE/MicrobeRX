@@ -10,6 +10,8 @@ The module contains the following classes:
 
 __all__ = ["MetabolitePredictor", "RunPredictionRule"]
 
+from .DataFiles import load_evidences, load_reaction_rules
+
 import rdkit
 from rdkit import Chem
 from rdkit.Chem import AllChem, MACCSkeys, DataStructs
@@ -54,7 +56,7 @@ class MetabolitePredictor:
         Run the metabolite prediction using the provided query molecule and name.
     """
     
-    def __init__(self, rules_table: pd.DataFrame):
+    def __init__(self, query: Chem.Mol, query_name: str = "metabolite", cut_off:float=0.6,biosystem:str="all"):
         """
         Initialize a MetabolitePredictor instance.
 
@@ -63,9 +65,38 @@ class MetabolitePredictor:
         rules_table : pd.DataFrame
             The path to a table containing reaction rules and associated information.
         """
-        self.rules_table = rules_table
+        
+        self.biosystem = biosystem
+        self.predicted_metabolites = pd.DataFrame()
+        self.query = query
+        self.query_name = query_name
+        self.query_atoms_num = query.GetNumHeavyAtoms()
+        self.reacting_atoms = []
+        self.reacting_atoms_in_unique_metabolites = []
+        self.cut_off=cut_off
+        
+        evidences = load_evidences()
+        rules_table = load_reaction_rules()
+        
+        rules_table['bigg_reaction']=[r.replace("_LR","").replace("_RL","") for r in rules_table.reaction_id]
+        
+        
+        if self.biosystem == "all":
+            self.evidences = evidences.groupby('reaction_id')[['origin','compartment','name','subsystem','reversibility','ec','metanetx_reaction','seed_reaction','rhea','kegg_reaction','pubmed']].agg(lambda x: ';'.join([i for i in set(x) if isinstance(i,str)])).reset_index()
+            
+            self.rules_table = rules_table[rules_table["bigg_reaction"].isin(self.evidences.reaction_id.unique())]
+            
+        if self.biosystem == "human":
+            evidences = evidences[['reaction_id','origin','compartment','name','subsystem','reversibility','ec','metanetx_reaction','seed_reaction','rhea','kegg_reaction','pubmed']]
+            self.evidences = evidences[evidences.origin=="Human"]
+            self.rules_table = rules_table[rules_table["bigg_reaction"].isin(self.evidences.reaction_id.unique())]
+        
+        if self.biosystem == "gutmicrobes":
+            evidences = evidences[['reaction_id','origin','compartment','name','subsystem','reversibility','ec','metanetx_reaction','seed_reaction','rhea','kegg_reaction','pubmed']]
+            self.evidences = evidences[evidences.origin=="GutMicrobes"]
+            self.rules_table = rules_table[rules_table["bigg_reaction"].isin(self.evidences.reaction_id.unique())]
 
-    def run_prediction(self, query: Chem.Mol, name: str = "metabolite"):
+    def run_prediction(self):
         """
         This method performs metabolite prediction using reaction rules from the rules table. It calculates confidence scores for predicted metabolites and stores the results in the 'predicted_metabolites' attribute.
 
@@ -73,7 +104,7 @@ class MetabolitePredictor:
         ----------
         query : Chem.Mol
             The query molecule for metabolite prediction.
-        name : str, optional
+        query_name : str, optional
             The name associated with the query molecule. Default is "metabolite".
 
         Returns
@@ -87,12 +118,6 @@ class MetabolitePredictor:
         >>> predictor.run_prediction(query_molecule, "acetate")
         >>> predicted_metabolites_df = predictor.predicted_metabolites
         """
-        self.predicted_metabolites = pd.DataFrame()
-        self.query = query
-        self.query_name = name
-        self.query_atoms_num = query.GetNumHeavyAtoms()
-        self.reacting_atoms = []
-        self.reacting_atoms_in_unique_metabolites = []
 
         for index in tqdm(self.rules_table.index):
             # try:
@@ -110,6 +135,7 @@ class MetabolitePredictor:
                 tmp_table["substrate"] = self.rules_table.substrate[index]
                 tmp_table["product"] = self.rules_table["product"][index]
                 tmp_table["num_atoms"] = self.rules_table.num_atoms[index]
+                tmp_table["bigg_reaction"] = self.rules_table["bigg_reaction"][index]
                 tmp_table["reacting_atoms_efficiency"] = round(
                     self.rules_table.num_atoms[index] / self.query_atoms_num, 3
                 )
@@ -119,38 +145,36 @@ class MetabolitePredictor:
         # except Exception:
         # pass
 
-        self.predicted_metabolites["confidence_score"] = round(
-            self.predicted_metabolites.similarity_substrates
-            + self.predicted_metabolites.similarity_products
-            + self.predicted_metabolites.reacting_atoms_efficiency,
-            3,
-        )
-        self.predicted_metabolites.sort_values(
-            by="confidence_score", ascending=False, ignore_index=True, inplace=True
-        )
-        self.predicted_metabolites.drop_duplicates(
-            subset=["reaction_id", "substrate", "product", "main_product_smiles"],
-            keep="first",
-            inplace=True,
-            ignore_index=True,
-        )
-        # self.predicted_metabolites = self.predicted_metabolites.merge(self.evidences_database[['reaction_id','ec','reference_db','reaction_name','gene_name','uniprot','entrez']],on='reaction_id',how='left')
+        self.predicted_metabolites["confidence_score"] = round(self.predicted_metabolites.similarity_substrates
+                                                               + self.predicted_metabolites.similarity_products
+                                                               + self.predicted_metabolites.reacting_atoms_efficiency,3,)
+        
+        self.predicted_metabolites.sort_values(by="confidence_score", ascending=False, ignore_index=True, inplace=True)
+        
+        
+        
+        self.predicted_metabolites.drop_duplicates(subset=["reaction_id", "substrate", "product", "main_product_smiles"],
+                                                   keep="first",
+                                                   inplace=True,
+                                                   ignore_index=True)
 
+        self.predicted_metabolites = self.predicted_metabolites[self.predicted_metabolites.confidence_score>=self.cut_off]
+        
         un_mets = self.predicted_metabolites.drop_duplicates(
-            subset=["main_product_smiles"], keep="first", ignore_index=True
-        )
+            subset=["main_product_smiles"], keep="first", ignore_index=True)
+        
         self.unique_metabolites = copy.deepcopy(un_mets)
-        metabolite_rank = {
-            self.unique_metabolites.main_product_smiles[i]: f"{self.query_name}_{i+1}"
-            for i in self.unique_metabolites.index
-        }
+        
+        metabolite_rank = {self.unique_metabolites.main_product_smiles[i]: f"{self.query_name}_{i+1}" for i in self.unique_metabolites.index}
 
-        self.unique_metabolites[
-            "metabolite_id"
-        ] = self.unique_metabolites.main_product_smiles.map(metabolite_rank)
-        self.predicted_metabolites[
-            "metabolite_id"
-        ] = self.predicted_metabolites.main_product_smiles.map(metabolite_rank)
+        self.unique_metabolites["metabolite_id"] = self.unique_metabolites.main_product_smiles.map(metabolite_rank)
+        
+        self.predicted_metabolites["metabolite_id"] = self.predicted_metabolites.main_product_smiles.map(metabolite_rank)
+        
+        self.predicted_metabolites=self.predicted_metabolites.merge(self.evidences,left_on='bigg_reaction',right_on='reaction_id',how='left')
+        
+        self.predicted_metabolites.drop(columns=["reaction_id_y"],inplace=True)
+        self.predicted_metabolites.rename(columns={"reaction_id_x":"reaction_id"},inplace=True)
 
 
 class RunPredictionRule:

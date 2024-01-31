@@ -14,8 +14,7 @@ The module contains the following functions:
 
 __all__ = [
     "load_reaction_rules",
-    "load_human_evidences",
-    "load_microbes_evidences",
+    "load_evidences",
     "load_microbes_reactions",
     "load_microbes_data",
 ]
@@ -29,8 +28,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
 __REACTION_RULES = files("microberx.DataBase").joinpath("ReactionRules.tsv.gz")
-__HUMAN_EVIDENCES = files("microberx.DataBase").joinpath("HumanEvidences.tsv.gz")
-__MICROBES_EVIDENCES = files("microberx.DataBase").joinpath("MicrobesEvidences.tsv.gz")
+__EVIDENCES = files("microberx.DataBase").joinpath("Evidences.tsv.gz")
 __MICROBES_DATA = files("microberx.DataBase").joinpath("MicrobesData.tsv.gz")
 __MICROBES_REACTIONS = files("microberx.DataBase").joinpath("MicrobesReactions.tsv.gz")
 
@@ -53,7 +51,7 @@ def load_reaction_rules():
     return pd.read_csv(__REACTION_RULES, sep="\t", compression="gzip")
 
 
-def load_human_evidences():
+def load_evidences():
     """
     Load the human evidences from a compressed tab-separated file.
 
@@ -68,27 +66,9 @@ def load_human_evidences():
             - origin : Tells if the reaction is coming from human or gut microbes.
             - complexes_count : Numer of genes or complexes found in the metabolic network for this biotransformation. 
     """
-    logging.info("Loading human evidences...")
-    return pd.read_csv(__HUMAN_EVIDENCES, sep="\t", compression="gzip")
-
-
-def load_microbes_evidences():
-    """
-    Load the microbes evidences from a compressed tab-separated file.
-
-    Returns:
-        pandas.DataFrame: A dataframe containing the microbes evidences, with columns:
-            - source : The unique identifier of the source coming from the metabolic reconstruction.
-            - name : Name of the biotransformations, can match with enzyme name.
-            - ec : Enzyme Commission number for the biotransformation.
-            - mnx_id : Unified id from MetaNetX v4.0. 
-            - organisms_count : Number of organims where this souce id has been found.
-            - xrefs : coss-references to other reaction databases.
-            - origin : Tells if the reaction is coming from human or gut microbes.
-            - complexes_count : Numer of genes or complexes found in the metabolic network for this biotransformation. 
-    """
-    logging.info("Loading microbes evidences...")
-    return pd.read_csv(__MICROBES_EVIDENCES, sep="\t", compression="gzip")
+    logging.info("Loading evidences...")
+    
+    return pd.read_csv(__EVIDENCES, sep="\t", compression="gzip")
 
 
 def load_microbes_reactions():
