@@ -8,8 +8,11 @@ plotly
 PubChemPy
 pyopenms
 rdkit
+biopython
 rxnmapper
 scikit-learn
 scipy
 seaborn
 tqdm
+dash
+jupyter-dash

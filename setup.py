@@ -50,5 +50,5 @@ setup(
     url="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX",
     download_url="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX",
     include_package_data=True,
-    package_data={"": ["DataBase/*.tsv.gz"]},
+    package_data={"": ["DataBase/*.tsv.gz"], "",["bin/*"]},
 )
