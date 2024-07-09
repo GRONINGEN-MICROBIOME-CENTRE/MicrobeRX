@@ -37,10 +37,10 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'microberx=microberx:main',
+            'microberx=microberx_cli:main',
         ],
     },
-    scripts=['microberx.py'],
+    scripts=['microberx_cli.py'],
     classifiers=[
         "Development Status :: 1 - Planning",
         "Intended Audience :: Science/Research",
