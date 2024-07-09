@@ -35,6 +35,12 @@ setup(
         "cheminformatics",
         "metabolism",
     ],
+    entry_points={
+        'console_scripts': [
+            'microberx=microberx:main',
+        ],
+    },
+    scripts=['microberx.py'],
     classifiers=[
         "Development Status :: 1 - Planning",
         "Intended Audience :: Science/Research",

@@ -14,13 +14,10 @@
 
 **MicrobeRX is A tool for enzymatic reaction-based metabolite prediction in the gut microbiome.** <br><br>
 
-> The main publication and details about the tool can be found in this publication:
+> The publication and details about the tool can be found here:
 
-[publication here]()
+[MicrobeRX: A tool for enzymatic-reaction-based metabolite prediction in the gut microbiome]()
 
-> The python library was developed to be integrated easily with any other bioinformatic or cheminformatic tool.
-
-> This repository contains examples as Jupyter Notbooks showing the capabilities of this library.
 
 Question about usage or troubleshooting? Please leave a comment in the discussion section of this repo
 
@@ -56,7 +53,10 @@ python setup.py install
 
 **3. Using MicrobeRX in GoogleColab:**
 
-[MicrobeRX Colab](https://shorturl.at/cpqu4)
+[Predict with MicrobeRX Colab](https://colab.research.google.com/drive/1bELtC9POifs8ExVqHDoVEu_yaBeWcF8Y?usp=sharing)
+
+[Drug Predictions from MicrobeRX Colab](https://colab.research.google.com/drive/170rIHrZDpXxaL7HjAD-v1LfU5yjADtva?usp=sharing)
+
 
 ## Tutorials
 
