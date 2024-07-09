@@ -69,6 +69,62 @@ python setup.py install
 
 <img src="https://github.com/GRONINGEN-MICROBIOME-CENTRE/MicrobeRX/blob/main/img/workflow.png?raw=true"  width="600" height="800">
 
+## Command line
+
+- **Description**
+    
+    The script can be run in two modes:
+
+        Single Prediction Mode: When the --smiles argument is provided, the script will perform predictions for the single molecule specified by the smiles string.
+
+        Batch Prediction Mode: When the --file argument is provided, the script will read the input file and perform predictions for each molecule listed in the file using multiprocessing.
+
+- **Examples**
+        
+    Single Prediction Mode:
+            ```
+            microberx --SMILES "CCO" --query_name "ethanol" --biosystem "all" --cutoff 0.6 --out "./predictions/"
+            ```
+            
+    This command will perform predictions for ethanol and save the results in the specified output directory.
+            
+    
+    
+    Batch Prediction Mode:
+            ```
+            microberx --file "input_molecules.tsv" --biosystem "all" --cutoff 0.6 --num_cores 4 --out "./predictions/"
+            ```
+            
+    This command will read the input_molecules.tsv file, perform predictions for each molecule using 4 cores, and save the results in the specified output directory.
+
+
+- **Output**
+
+        The predictions are saved as TSV files in the specified output directory. Each file is named after the query name provided or the names listed in the input file.   
+
+- **Arguments**
+
+        --smiles : str, optional
+        Input smiles string for prediction. If provided, predictions will be made for this single molecule.
+
+        --query_name : str, optional
+        Query name for the provided smiles string. This name will be used in the output file name.
+
+        --file : str, optional
+        Input file containing multiple smiles strings and names. The file should be in tab-separated values (TSV) format with columns "name" and "smiles".
+
+        --biosystem : str, optional
+        Biosystem to use for predictions. Default is 'all'.
+
+        --cutoff : float, optional
+        Cutoff value for predictions. Default is 0.6.
+
+        --num_cores : int, optional
+        Number of cores to use for multiprocessing. Default is 4.
+
+        --out : str, optional
+        Output directory for predictions. Default is the current directory ('./')   
+
 ## Citation
 
 If you use this software or its results in your research, publication, or project, please cite it as follows:
