@@ -16,8 +16,10 @@
 
 > The publication and details about the tool can be found here:
 
-[MicrobeRX: A tool for enzymatic-reaction-based metabolite prediction in the gut microbiome]()
+[Ruiz-Moreno, A.J., Del Castillo-Izquierdo, Á., Tamargo-Rubio, I. et al. MicrobeRX: a tool for enzymatic-reaction-based metabolite prediction in the gut microbiome. Microbiome 13, 78 (2025).](https://doi.org/10.1186/s40168-025-02070-5)
 
+
+[![Video](https://img.youtube.com/vi/RHgsHmAIBkA/0.jpg)](https://www.youtube.com/watch?v=RHgsHmAIBkA)
 
 Question about usage or troubleshooting? Please leave a comment in the discussion section of this repo
 
@@ -129,7 +131,7 @@ python setup.py install
 
 If you use this software or its results in your research, publication, or project, please cite it as follows:
 
-> Ruiz-Moreno AJ, Fu J. MicrobeRX: A tool for enzymatic reaction-based metabolite prediction in the gut microbiome [DOI: 10.5281/zenodo.10204312](https://zenodo.org/record/10204312)
+> [Ruiz-Moreno, A.J., Del Castillo-Izquierdo, Á., Tamargo-Rubio, I. et al. MicrobeRX: a tool for enzymatic-reaction-based metabolite prediction in the gut microbiome. Microbiome 13, 78 (2025).](https://doi.org/10.1186/s40168-025-02070-5)
 
 ## License
 This tool is under GPL-3.0 license, see the LICENSE file for details.
