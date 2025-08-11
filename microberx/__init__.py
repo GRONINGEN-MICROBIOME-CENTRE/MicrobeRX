@@ -10,19 +10,17 @@ The tool allows you to:
 # Handle versioneer
 from ._version import get_versions
 
-# Add imports here
+#from .RuleGenerator import *
 
-from .RuleGenerator import *
+#from .DataFiles import *
 
-from .DataFiles import *
+#from .MetabolitePredictor import *
 
-from .MetabolitePredictor import *
+#from .MetaboliteAnalyzer import *
 
-from .MetaboliteAnalyzer import *
+#from .MetaboliteVisualizer import *
 
-from .MetaboliteVisualizer import *
-
-from .OmicsIntegrator import *
+#from .OmicsIntegrator import *
 
 __version__ = get_versions()["version"]
 
